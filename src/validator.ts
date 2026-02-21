@@ -1,12 +1,17 @@
 import { escapeRegExp, getAllowedVerbs } from "./parsing";
-import type { PrTitleInput, PrTitleValidatorOptions } from "./types";
+import type {
+  PullRequestTitleInput,
+  PullRequestTitleValidatorOptions,
+} from "./types";
 
-export function createPrTitleValidator(options: PrTitleValidatorOptions = {}) {
+export function createPullRequestTitleValidator(
+  options: PullRequestTitleValidatorOptions = {},
+) {
   const issuePrefix = options.issuePrefix ?? "";
   const enforceLowercase = options.enforceLowercase ?? true;
   const allowedVerbs = getAllowedVerbs(options.imperativeVerbs);
 
-  return ({ title }: PrTitleInput): void => {
+  return ({ title }: PullRequestTitleInput): void => {
     if (title === "") {
       throw new Error("Unable to validate PR title. title is empty.");
     }
@@ -50,5 +55,3 @@ export function createPrTitleValidator(options: PrTitleValidatorOptions = {}) {
     }
   };
 }
-
-export const checkPrTitle = createPrTitleValidator;

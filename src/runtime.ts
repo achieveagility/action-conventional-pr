@@ -1,5 +1,5 @@
 import { parseBooleanInput, parseImperativeVerbsInput } from "./parsing";
-import { createPrTitleValidator } from "./validator";
+import { createPullRequestTitleValidator } from "./validator";
 
 export function runFromEnv(): void {
   const title = process.env.PR_TITLE ?? "";
@@ -7,7 +7,7 @@ export function runFromEnv(): void {
   const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
   const imperativeVerbsInput = process.env.IMPERATIVE_VERBS ?? "";
 
-  const validatePrTitle = createPrTitleValidator({
+  const validatePullRequestTitle = createPullRequestTitleValidator({
     issuePrefix,
     enforceLowercase: parseBooleanInput(
       "enforce-lowercase",
@@ -16,5 +16,5 @@ export function runFromEnv(): void {
     imperativeVerbs: parseImperativeVerbsInput(imperativeVerbsInput),
   });
 
-  validatePrTitle({ title });
+  validatePullRequestTitle({ title });
 }

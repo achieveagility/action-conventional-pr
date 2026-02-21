@@ -1,9 +1,9 @@
-export type PrTitleValidatorOptions = {
+export type PullRequestTitleValidatorOptions = {
   issuePrefix?: string;
   enforceLowercase?: boolean;
   imperativeVerbs?: readonly string[];
 };
 
-export type PrTitleInput = {
+export type PullRequestTitleInput = {
   title: string;
 };

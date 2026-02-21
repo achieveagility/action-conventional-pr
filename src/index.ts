@@ -1,7 +1,10 @@
 import { runFromEnv } from "./runtime";
 
-export { checkPrTitle, createPrTitleValidator } from "./validator";
-export type { PrTitleInput, PrTitleValidatorOptions } from "./types";
+export { createPullRequestTitleValidator } from "./validator";
+export type {
+  PullRequestTitleInput,
+  PullRequestTitleValidatorOptions,
+} from "./types";
 
 if (require.main === module) {
   try {

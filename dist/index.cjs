@@ -50,7 +50,7 @@ function parseImperativeVerbsInput(input) {
 
 //#endregion
 //#region src/validator.ts
-function createPrTitleValidator(options = {}) {
+function createPullRequestTitleValidator(options = {}) {
 	const issuePrefix = options.issuePrefix ?? "";
 	const enforceLowercase = options.enforceLowercase ?? true;
 	const allowedVerbs = getAllowedVerbs(options.imperativeVerbs);
@@ -74,7 +74,6 @@ function createPrTitleValidator(options = {}) {
 		if (!allowedVerbs.has(firstWord)) throw new Error("PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor).");
 	};
 }
-const checkPrTitle = createPrTitleValidator;
 
 //#endregion
 //#region src/runtime.ts
@@ -83,7 +82,7 @@ function runFromEnv() {
 	const issuePrefix = process.env.ISSUE_PREFIX ?? "";
 	const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
 	const imperativeVerbsInput = process.env.IMPERATIVE_VERBS ?? "";
-	createPrTitleValidator({
+	createPullRequestTitleValidator({
 		issuePrefix,
 		enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
 		imperativeVerbs: parseImperativeVerbsInput(imperativeVerbsInput)
@@ -101,5 +100,4 @@ if (require.main === module) try {
 }
 
 //#endregion
-exports.checkPrTitle = checkPrTitle;
-exports.createPrTitleValidator = createPrTitleValidator;
+exports.createPullRequestTitleValidator = createPullRequestTitleValidator;
