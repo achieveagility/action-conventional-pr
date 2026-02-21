@@ -4,6 +4,7 @@
   "description": "Opinionated PR title validation action built on action-semantic-pull-request",
   "license": "MIT",
   "type": "module",
+  "packageManager": "pnpm@10.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -13,8 +14,10 @@
   },
   "homepage": "https://github.com/achieveagility/action-conventional-pr#readme",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "types:check": "tsc -p tsconfig.build.json --noEmit"
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "build": "tsdown",
+    "types:check": "tsc -p tsconfig.json"
   },
   "files": [
     "action.yml",
@@ -23,6 +26,9 @@
   ],
   "devDependencies": {
     "@types/node": "25.3.0",
+    "oxfmt": "latest",
+    "oxlint": "latest",
+    "tsdown": "latest",
     "typescript": "^5.9.3"
   }
 }
