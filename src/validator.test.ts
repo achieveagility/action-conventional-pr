@@ -56,12 +56,40 @@ describe("createPullRequestTitleValidator", () => {
     );
   });
 
-  it("accepts custom imperative verbs", () => {
+  it("accepts custom verbs override", () => {
     const validate = createPullRequestTitleValidator({
-      imperativeVerbs: ["ship"],
+      verbs: ["ship"],
     });
 
     expect(() => validate({ title: "feat: ship logging" })).not.toThrow();
+  });
+
+  it("accepts add-verbs additions", () => {
+    const validate = createPullRequestTitleValidator({
+      addVerbs: ["ship"],
+    });
+
+    expect(() => validate({ title: "feat: ship logging" })).not.toThrow();
+  });
+
+  it("deduplicates add-verbs against defaults", () => {
+    const validate = createPullRequestTitleValidator({
+      addVerbs: ["add", "ship", "ship"],
+    });
+
+    expect(() => validate({ title: "feat: add logging" })).not.toThrow();
+    expect(() => validate({ title: "feat: ship logging" })).not.toThrow();
+  });
+
+  it("throws when verbs and add-verbs are both set", () => {
+    expect(() =>
+      createPullRequestTitleValidator({
+        verbs: ["ship"],
+        addVerbs: ["polish"],
+      }),
+    ).toThrow(
+      "verbs and add-verbs cannot both be set. Use verbs to override or add-verbs to extend defaults.",
+    );
   });
 
   it("accepts valid issue suffix when configured", () => {

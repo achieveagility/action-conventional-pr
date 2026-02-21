@@ -17,6 +17,7 @@
   "scripts": {
     "format:check": "oxfmt --check",
     "lint": "oxlint",
+    "test": "vitest run",
     "build": "tsdown",
     "types:check": "tsc -p tsconfig.json"
   },

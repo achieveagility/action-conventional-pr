@@ -4,22 +4,44 @@ export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export function getAllowedVerbs(input?: readonly string[]): Set<string> {
-  if (!input || input.length === 0) {
-    return new Set(defaultImperativeVerbs);
+function normalizeVerbs(input?: readonly string[]): string[] {
+  if (!input) {
+    return [];
   }
 
-  const verbs = input
+  return input
     .map((verb) => verb.trim().toLowerCase())
     .filter((verb) => verb.length > 0);
+}
 
-  if (verbs.length === 0) {
+export function getAllowedVerbs(options: {
+  verbs?: readonly string[];
+  addVerbs?: readonly string[];
+}): Set<string> {
+  const verbs = normalizeVerbs(options.verbs);
+  const addVerbs = normalizeVerbs(options.addVerbs);
+
+  if (verbs.length > 0 && addVerbs.length > 0) {
     throw new Error(
-      "imperativeVerbs must contain at least one non-empty verb when provided.",
+      "verbs and add-verbs cannot both be set. Use verbs to override or add-verbs to extend defaults.",
     );
   }
 
-  return new Set(verbs);
+  if (options.verbs && verbs.length === 0) {
+    throw new Error(
+      "verbs must contain at least one non-empty verb when provided.",
+    );
+  }
+
+  if (verbs.length > 0) {
+    return new Set(verbs);
+  }
+
+  if (addVerbs.length > 0) {
+    return new Set([...defaultImperativeVerbs, ...addVerbs]);
+  }
+
+  return new Set(defaultImperativeVerbs);
 }
 
 export function parseBooleanInput(name: string, value: string): boolean {
@@ -35,7 +57,7 @@ export function parseBooleanInput(name: string, value: string): boolean {
   throw new Error(`${name} must be either 'true' or 'false'.`);
 }
 
-export function parseImperativeVerbsInput(input: string): string[] {
+export function parseVerbsInput(input: string): string[] {
   return input
     .split(",")
     .map((verb) => verb.trim())

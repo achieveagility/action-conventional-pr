@@ -10,8 +10,12 @@ inputs:
     description: "Whether the PR subject must be lowercase (`true` or `false`)."
     required: false
     default: "true"
-  imperative-verbs:
-    description: "Optional comma-separated list of allowed imperative verbs to override the default list."
+  verbs:
+    description: "Optional comma-separated list of allowed imperative verbs. Overrides the default list."
+    required: false
+    default: ""
+  add-verbs:
+    description: "Optional comma-separated list of imperative verbs to add to the default list."
     required: false
     default: ""
 
@@ -29,5 +33,6 @@ runs:
         PR_TITLE: ${{ github.event.pull_request.title }}
         ISSUE_PREFIX: ${{ inputs.issue-prefix }}
         ENFORCE_LOWERCASE: ${{ inputs.enforce-lowercase }}
-        IMPERATIVE_VERBS: ${{ inputs.imperative-verbs }}
+        VERBS: ${{ inputs.verbs }}
+        ADD_VERBS: ${{ inputs.add-verbs }}
       run: node "${{ github.action_path }}/dist/index.cjs"

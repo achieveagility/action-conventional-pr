@@ -9,7 +9,10 @@ export function createPullRequestTitleValidator(
 ) {
   const issuePrefix = options.issuePrefix ?? "";
   const enforceLowercase = options.enforceLowercase ?? true;
-  const allowedVerbs = getAllowedVerbs(options.imperativeVerbs);
+  const allowedVerbs = getAllowedVerbs({
+    verbs: options.verbs,
+    addVerbs: options.addVerbs,
+  });
 
   return ({ title }: PullRequestTitleInput): void => {
     if (title === "") {

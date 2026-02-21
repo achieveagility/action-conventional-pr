@@ -1,7 +1,8 @@
 export type PullRequestTitleValidatorOptions = {
   issuePrefix?: string;
   enforceLowercase?: boolean;
-  imperativeVerbs?: readonly string[];
+  verbs?: readonly string[];
+  addVerbs?: readonly string[];
 };
 
 export type PullRequestTitleInput = {

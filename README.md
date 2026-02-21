@@ -39,8 +39,12 @@ If `issue-prefix` is set, the optional suffix must be `${prefix}<positive-intege
 
 `enforce-lowercase` is optional (`true` by default). Set it to `false` to allow uppercase letters in the subject.
 
-`imperative-verbs` is optional and can override the default allowed first-word verb list (comma-separated).
+`verbs` is optional and overrides the default allowed first-word verb list (comma-separated).
+
+`add-verbs` is optional and adds verbs to the default allowed list (comma-separated). Duplicates are removed.
+
+`verbs` and `add-verbs` cannot both be set at the same time.
 
 Default imperative verbs accepted as first subject word:
 
-`add`, `adjust`, `bump`, `change`, `clean`, `create`, `disable`, `document`, `drop`, `enable`, `fix`, `implement`, `improve`, `introduce`, `migrate`, `optimize`, `refactor`, `remove`, `rename`, `replace`, `revert`, `simplify`, `update`, `upgrade`.
+`add`, `adjust`, `bump`, `change`, `clean`, `create`, `disable`, `document`, `drop`, `enable`, `fix`, `implement`, `improve`, `introduce`, `migrate`, `refactor`, `remove`, `rename`, `replace`, `revert`, `simplify`, `update`, `upgrade`.

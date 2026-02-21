@@ -32,11 +32,18 @@ const defaultImperativeVerbs = [
 function escapeRegExp(value) {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-function getAllowedVerbs(input) {
-	if (!input || input.length === 0) return new Set(defaultImperativeVerbs);
-	const verbs = input.map((verb) => verb.trim().toLowerCase()).filter((verb) => verb.length > 0);
-	if (verbs.length === 0) throw new Error("imperativeVerbs must contain at least one non-empty verb when provided.");
-	return new Set(verbs);
+function normalizeVerbs(input) {
+	if (!input) return [];
+	return input.map((verb) => verb.trim().toLowerCase()).filter((verb) => verb.length > 0);
+}
+function getAllowedVerbs(options) {
+	const verbs = normalizeVerbs(options.verbs);
+	const addVerbs = normalizeVerbs(options.addVerbs);
+	if (verbs.length > 0 && addVerbs.length > 0) throw new Error("verbs and add-verbs cannot both be set. Use verbs to override or add-verbs to extend defaults.");
+	if (options.verbs && verbs.length === 0) throw new Error("verbs must contain at least one non-empty verb when provided.");
+	if (verbs.length > 0) return new Set(verbs);
+	if (addVerbs.length > 0) return new Set([...defaultImperativeVerbs, ...addVerbs]);
+	return new Set(defaultImperativeVerbs);
 }
 function parseBooleanInput(name, value) {
 	const normalized = value.trim().toLowerCase();
@@ -44,7 +51,7 @@ function parseBooleanInput(name, value) {
 	if (normalized === "false") return false;
 	throw new Error(`${name} must be either 'true' or 'false'.`);
 }
-function parseImperativeVerbsInput(input) {
+function parseVerbsInput(input) {
 	return input.split(",").map((verb) => verb.trim()).filter((verb) => verb.length > 0);
 }
 
@@ -53,9 +60,13 @@ function parseImperativeVerbsInput(input) {
 function createPullRequestTitleValidator(options = {}) {
 	const issuePrefix = options.issuePrefix ?? "";
 	const enforceLowercase = options.enforceLowercase ?? true;
-	const allowedVerbs = getAllowedVerbs(options.imperativeVerbs);
+	const allowedVerbs = getAllowedVerbs({
+		verbs: options.verbs,
+		addVerbs: options.addVerbs
+	});
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
+		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
 		const titleMatch = /^[^:]+:\s+(.+)$/.exec(title);
 		if (!titleMatch) throw new Error("PR title must include a subject after ': '.");
 		const subject = titleMatch[1];
@@ -81,11 +92,13 @@ function runFromEnv() {
 	const title = process.env.PR_TITLE ?? "";
 	const issuePrefix = process.env.ISSUE_PREFIX ?? "";
 	const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
-	const imperativeVerbsInput = process.env.IMPERATIVE_VERBS ?? "";
+	const verbsInput = process.env.VERBS ?? "";
+	const addVerbsInput = process.env.ADD_VERBS ?? "";
 	createPullRequestTitleValidator({
 		issuePrefix,
 		enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
-		imperativeVerbs: parseImperativeVerbsInput(imperativeVerbsInput)
+		verbs: parseVerbsInput(verbsInput),
+		addVerbs: parseVerbsInput(addVerbsInput)
 	})({ title });
 }
 
