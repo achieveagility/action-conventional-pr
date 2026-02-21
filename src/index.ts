@@ -1,4 +1,4 @@
-const DEFAULT_IMPERATIVE_VERBS = [
+const defaultImperativeVerbs = [
   "add",
   "adjust",
   "bump",
@@ -22,7 +22,7 @@ const DEFAULT_IMPERATIVE_VERBS = [
   "revert",
   "simplify",
   "update",
-  "upgrade"
+  "upgrade",
 ] as const;
 
 const title = process.env.PR_TITLE ?? "";
@@ -33,6 +33,7 @@ const imperativeVerbsInput = process.env.IMPERATIVE_VERBS ?? "";
 function fail(message: string): never {
   console.error(`::error::${message}`);
   process.exit(1);
+  throw new Error(message);
 }
 
 function escapeRegExp(value: string): string {
@@ -41,7 +42,7 @@ function escapeRegExp(value: string): string {
 
 function getAllowedVerbs(input: string): Set<string> {
   if (input.trim() === "") {
-    return new Set(DEFAULT_IMPERATIVE_VERBS);
+    return new Set(defaultImperativeVerbs);
   }
 
   const verbs = input
@@ -91,7 +92,7 @@ if (issuePrefix !== "") {
     subjectCore = validMatch[1];
   } else if (prefixedSuffixRegex.test(subject)) {
     fail(
-      `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`
+      `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
     );
   }
 }
@@ -100,7 +101,10 @@ if (subjectCore.length === 0) {
   fail("PR subject cannot be empty.");
 }
 
-const enforceLowercase = parseBooleanInput("enforce-lowercase", enforceLowercaseInput);
+const enforceLowercase = parseBooleanInput(
+  "enforce-lowercase",
+  enforceLowercaseInput,
+);
 if (enforceLowercase && /[A-Z]/.test(subjectCore)) {
   fail("PR subject must be all lowercase.");
 }
@@ -109,6 +113,6 @@ const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
 const allowedVerbs = getAllowedVerbs(imperativeVerbsInput);
 if (!allowedVerbs.has(firstWord)) {
   fail(
-    "PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor)."
+    "PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor).",
   );
 }
