@@ -1,4 +1,4 @@
-import { defaultImperativeVerbs } from "./constants";
+import { defaultImperativeVerbs } from "./verbs";
 
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

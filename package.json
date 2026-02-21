@@ -4,6 +4,7 @@
   "description": "Opinionated PR title validation action built on action-semantic-pull-request",
   "license": "MIT",
   "type": "module",
+  "main": "./dist/index.cjs",
   "packageManager": "pnpm@10.0.0",
   "publishConfig": {
     "access": "public"

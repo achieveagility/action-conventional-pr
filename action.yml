@@ -30,4 +30,4 @@ runs:
         ISSUE_PREFIX: ${{ inputs.issue-prefix }}
         ENFORCE_LOWERCASE: ${{ inputs.enforce-lowercase }}
         IMPERATIVE_VERBS: ${{ inputs.imperative-verbs }}
-      run: node "${{ github.action_path }}/dist/index.js"
+      run: node "${{ github.action_path }}/dist/index.cjs"
