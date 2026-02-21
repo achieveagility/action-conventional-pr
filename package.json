@@ -1,0 +1,28 @@
+{
+  "name": "@aaos/action-conventional-pr",
+  "version": "0.1.0",
+  "description": "Opinionated PR title validation action built on action-semantic-pull-request",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/achieveagility/action-conventional-pr.git"
+  },
+  "homepage": "https://github.com/achieveagility/action-conventional-pr#readme",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "types:check": "tsc -p tsconfig.build.json --noEmit"
+  },
+  "files": [
+    "action.yml",
+    "dist/**/*",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@types/node": "25.3.0",
+    "typescript": "^5.9.3"
+  }
+}

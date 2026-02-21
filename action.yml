@@ -1,0 +1,33 @@
+name: "Action PR Conventional"
+description: "Opinionated PR title validation with semantic format, configurable lowercase subject, imperative verb, and optional issue suffix."
+
+inputs:
+  issue-prefix:
+    description: "Optional issue prefix for a suffix at the end of the subject (for example, PROJ- to allow '... PROJ-123')."
+    required: false
+    default: ""
+  enforce-lowercase:
+    description: "Whether the PR subject must be lowercase (`true` or `false`)."
+    required: false
+    default: "true"
+  imperative-verbs:
+    description: "Optional comma-separated list of allowed imperative verbs to override the default list."
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate semantic PR title
+      uses: amannn/action-semantic-pull-request@v5
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Validate imperative subject
+      shell: bash
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        ISSUE_PREFIX: ${{ inputs.issue-prefix }}
+        ENFORCE_LOWERCASE: ${{ inputs.enforce-lowercase }}
+        IMPERATIVE_VERBS: ${{ inputs.imperative-verbs }}
+      run: node "${{ github.action_path }}/dist/index.js"
