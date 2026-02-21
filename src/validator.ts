@@ -16,6 +16,10 @@ export function createPullRequestTitleValidator(
       throw new Error("Unable to validate PR title. title is empty.");
     }
 
+    if (/^[^:]+:\s*$/.test(title)) {
+      throw new Error("PR subject cannot be empty.");
+    }
+
     const titleMatch = /^[^:]+:\s+(.+)$/.exec(title);
     if (!titleMatch) {
       throw new Error("PR title must include a subject after ': '.");
