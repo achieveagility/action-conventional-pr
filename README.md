@@ -29,7 +29,7 @@ jobs:
 ## Examples
 
 - `feat(api): add endpoint`
-- `fix(ci): update release workflow`
+- `ci: update release workflow`
 - `chore: refactor nx config foo-123`
 
 ## Rules
