@@ -26,7 +26,7 @@ jobs:
           issue-prefix: "foo-"
 ```
 
-## Examples
+## Examples
 
 - `feat(api): add endpoint`
 - `fix(ci): update release workflow`
