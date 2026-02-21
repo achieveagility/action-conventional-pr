@@ -1,12 +1,7 @@
 import { escapeRegExp, getAllowedVerbs } from "./parsing";
-import type {
-  PullRequestTitleInput,
-  PullRequestTitleValidatorOptions,
-} from "./types";
+import type { PullRequestTitleInput, PullRequestTitleValidatorOptions } from "./types";
 
-export function createPullRequestTitleValidator(
-  options: PullRequestTitleValidatorOptions = {},
-) {
+export function createPullRequestTitleValidator(options: PullRequestTitleValidatorOptions = {}) {
   const issuePrefix = options.issuePrefix ?? "";
   const enforceLowercase = options.enforceLowercase ?? true;
   const allowedVerbs = getAllowedVerbs({

@@ -11,9 +11,7 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when title is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "" })).toThrow(
-      "Unable to validate PR title. title is empty.",
-    );
+    expect(() => validate({ title: "" })).toThrow("Unable to validate PR title. title is empty.");
   });
 
   it("throws when title does not have a subject separator", () => {
@@ -27,9 +25,7 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when subject is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "feat: " })).toThrow(
-      "PR subject cannot be empty.",
-    );
+    expect(() => validate({ title: "feat: " })).toThrow("PR subject cannot be empty.");
   });
 
   it("throws when subject contains uppercase by default", () => {

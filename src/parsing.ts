@@ -9,9 +9,7 @@ function normalizeVerbs(input?: readonly string[]): string[] {
     return [];
   }
 
-  return input
-    .map((verb) => verb.trim().toLowerCase())
-    .filter((verb) => verb.length > 0);
+  return input.map((verb) => verb.trim().toLowerCase()).filter((verb) => verb.length > 0);
 }
 
 export function getAllowedVerbs(options: {
@@ -28,9 +26,7 @@ export function getAllowedVerbs(options: {
   }
 
   if (options.verbs && verbs.length === 0) {
-    throw new Error(
-      "verbs must contain at least one non-empty verb when provided.",
-    );
+    throw new Error("verbs must contain at least one non-empty verb when provided.");
   }
 
   if (verbs.length > 0) {

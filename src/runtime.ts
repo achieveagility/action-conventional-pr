@@ -10,10 +10,7 @@ export function runFromEnv(): void {
 
   const validatePullRequestTitle = createPullRequestTitleValidator({
     issuePrefix,
-    enforceLowercase: parseBooleanInput(
-      "enforce-lowercase",
-      enforceLowercaseInput,
-    ),
+    enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
     verbs: parseVerbsInput(verbsInput),
     addVerbs: parseVerbsInput(addVerbsInput),
   });

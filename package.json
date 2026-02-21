@@ -2,30 +2,30 @@
   "name": "@aaos/action-conventional-pr",
   "version": "0.1.0",
   "description": "Opinionated PR title validation action built on action-semantic-pull-request",
+  "homepage": "https://github.com/achieveagility/action-conventional-pr#readme",
   "license": "MIT",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "packageManager": "pnpm@10.30.1",
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/achieveagility/action-conventional-pr.git"
-  },
-  "homepage": "https://github.com/achieveagility/action-conventional-pr#readme",
-  "scripts": {
-    "format:check": "oxfmt --check",
-    "lint": "oxlint",
-    "test": "vitest run",
-    "build": "tsdown",
-    "types:check": "tsc -p tsconfig.json"
   },
   "files": [
     "action.yml",
     "dist/**/*",
     "README.md"
   ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "build": "tsdown",
+    "types:check": "tsc -p tsconfig.json"
+  },
   "devDependencies": {
     "@types/node": "25.3.0",
     "oxfmt": "latest",
@@ -33,5 +33,6 @@
     "tsdown": "latest",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
-  }
+  },
+  "packageManager": "pnpm@10.30.1"
 }
