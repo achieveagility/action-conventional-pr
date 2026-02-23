@@ -11,9 +11,7 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when title is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "" })).toThrow(
-      "Unable to validate PR title. title is empty.",
-    );
+    expect(() => validate({ title: "" })).toThrow("Unable to validate PR title. title is empty.");
   });
 
   it("throws when title has leading whitespace", () => {
@@ -43,9 +41,7 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when subject is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "feat: " })).toThrow(
-      "PR subject cannot be empty.",
-    );
+    expect(() => validate({ title: "feat: " })).toThrow("PR subject cannot be empty.");
   });
 
   it("throws when subject contains uppercase by default", () => {
@@ -113,9 +109,7 @@ describe("createPullRequestTitleValidator", () => {
       issuePrefix: "ABC-",
     });
 
-    expect(() =>
-      validate({ title: "feat: add logging ABC-123" }),
-    ).not.toThrow();
+    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
   });
 
   it("throws when subject has uppercase even with a valid issue suffix", () => {
@@ -169,9 +163,7 @@ describe("createPullRequestTitleValidator", () => {
       issueUnknown: true,
     });
 
-    expect(() =>
-      validate({ title: "feat: add logging ABC-123" }),
-    ).not.toThrow();
+    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
     expect(() => validate({ title: "feat: add logging #123" })).not.toThrow();
   });
 
@@ -191,9 +183,7 @@ describe("createPullRequestTitleValidator", () => {
       issueUnknown: true,
     });
 
-    expect(() =>
-      validate({ title: "feat: add logging XYZ-123" }),
-    ).not.toThrow();
+    expect(() => validate({ title: "feat: add logging XYZ-123" })).not.toThrow();
   });
 
   it("requires issue suffix when issueMode is required with issue-prefix", () => {
@@ -213,9 +203,7 @@ describe("createPullRequestTitleValidator", () => {
       issueMode: "required",
     });
 
-    expect(() =>
-      validate({ title: "feat: add logging ABC-123" }),
-    ).not.toThrow();
+    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
   });
 
   it("requires issue-like suffix when issueMode is required and issueUnknown is true", () => {

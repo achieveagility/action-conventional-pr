@@ -1,8 +1,4 @@
-import {
-  parseBooleanInput,
-  parseIssueModeInput,
-  parseVerbsInput,
-} from "./parsing";
+import { parseBooleanInput, parseIssueModeInput, parseVerbsInput } from "./parsing";
 import { createPullRequestTitleValidator } from "./validator";
 
 export function runFromEnv(): void {
@@ -21,10 +17,7 @@ export function runFromEnv(): void {
     issueMode: parseIssueModeInput(issueModeInput),
     issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
     issueNearMiss: parseBooleanInput("issue-near-miss", issueNearMissInput),
-    trailingPunctuation: parseBooleanInput(
-      "trailing-punctuation",
-      trailingPunctuationInput,
-    ),
+    trailingPunctuation: parseBooleanInput("trailing-punctuation", trailingPunctuationInput),
     enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
     verbs: parseVerbsInput(verbsInput),
     addVerbs: parseVerbsInput(addVerbsInput),

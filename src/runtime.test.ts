@@ -86,9 +86,7 @@ describe("runFromEnv", () => {
     };
 
     try {
-      expect(() => runFromEnv()).toThrow(
-        "Issue suffix is required by issue-mode 'required'.",
-      );
+      expect(() => runFromEnv()).toThrow("Issue suffix is required by issue-mode 'required'.");
     } finally {
       process.env = originalEnv;
     }
@@ -110,9 +108,7 @@ describe("runFromEnv", () => {
     };
 
     try {
-      expect(() => runFromEnv()).toThrow(
-        "PR subject cannot end with trailing punctuation.",
-      );
+      expect(() => runFromEnv()).toThrow("PR subject cannot end with trailing punctuation.");
     } finally {
       process.env = originalEnv;
     }

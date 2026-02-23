@@ -1,12 +1,7 @@
 import { escapeRegExp, getAllowedVerbs } from "./parsing";
-import type {
-  PullRequestTitleInput,
-  PullRequestTitleValidatorOptions,
-} from "./types";
+import type { PullRequestTitleInput, PullRequestTitleValidatorOptions } from "./types";
 
-export function createPullRequestTitleValidator(
-  options: PullRequestTitleValidatorOptions = {},
-) {
+export function createPullRequestTitleValidator(options: PullRequestTitleValidatorOptions = {}) {
   const issuePrefix = options.issuePrefix ?? "";
   const issueMode = options.issueMode ?? "optional";
   const issueUnknown = options.issueUnknown ?? false;
@@ -18,10 +13,7 @@ export function createPullRequestTitleValidator(
     addVerbs: options.addVerbs,
   });
   const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
-  const trailingIssueLikeSuffixRegex = new RegExp(
-    `^(.*)\\s${issueLikeSuffixPattern}$`,
-    "i",
-  );
+  const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s${issueLikeSuffixPattern}$`, "i");
   const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
   const issueNearMissRegex =
     issuePrefix !== "" && issuePrefixNearMissBase !== issuePrefix
@@ -58,9 +50,7 @@ export function createPullRequestTitleValidator(
 
     if (issuePrefix !== "") {
       const escapedPrefix = escapeRegExp(issuePrefix);
-      const validTicketRegex = new RegExp(
-        `^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`,
-      );
+      const validTicketRegex = new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`);
       const prefixedSuffixRegex = new RegExp(`\\s${escapedPrefix}[0-9]+$`);
 
       const validMatch = validTicketRegex.exec(subject);
