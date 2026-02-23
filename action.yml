@@ -14,6 +14,14 @@ inputs:
     description: "Whether unknown issue-like suffixes are allowed (`true` or `false`)."
     required: false
     default: "false"
+  issue-near-miss:
+    description: "Whether issue-prefix near-miss suffixes (for example foo123 for foo-) are allowed (`true` or `false`)."
+    required: false
+    default: "false"
+  trailing-punctuation:
+    description: "Whether trailing punctuation in the PR subject is allowed (`true` or `false`)."
+    required: false
+    default: "false"
   enforce-lowercase:
     description: "Whether the PR subject must be lowercase (`true` or `false`)."
     required: false
@@ -42,6 +50,8 @@ runs:
         ISSUE_PREFIX: ${{ inputs.issue-prefix }}
         ISSUE_MODE: ${{ inputs.issue-mode }}
         ISSUE_UNKNOWN: ${{ inputs.issue-unknown }}
+        ISSUE_NEAR_MISS: ${{ inputs.issue-near-miss }}
+        TRAILING_PUNCTUATION: ${{ inputs.trailing-punctuation }}
         ENFORCE_LOWERCASE: ${{ inputs.enforce-lowercase }}
         VERBS: ${{ inputs.verbs }}
         ADD_VERBS: ${{ inputs.add-verbs }}

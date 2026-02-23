@@ -240,4 +240,39 @@ describe("createPullRequestTitleValidator", () => {
       "Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.",
     );
   });
+
+  it("throws when subject ends with trailing punctuation by default", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "feat: add logging." })).toThrow(
+      "PR subject cannot end with trailing punctuation.",
+    );
+  });
+
+  it("allows trailing punctuation when trailingPunctuation is true", () => {
+    const validate = createPullRequestTitleValidator({
+      trailingPunctuation: true,
+    });
+
+    expect(() => validate({ title: "feat: add logging." })).not.toThrow();
+  });
+
+  it("throws on issue-prefix near-miss suffix by default", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "foo-",
+    });
+
+    expect(() => validate({ title: "chore: add logging foo123" })).toThrow(
+      "Issue suffix is invalid. Expected 'foo-<positive-integer>' (for example foo-123).",
+    );
+  });
+
+  it("allows issue-prefix near-miss suffix when issueNearMiss is true", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "foo-",
+      issueNearMiss: true,
+    });
+
+    expect(() => validate({ title: "chore: add logging foo123" })).not.toThrow();
+  });
 });

@@ -10,6 +10,8 @@ export function createPullRequestTitleValidator(
   const issuePrefix = options.issuePrefix ?? "";
   const issueMode = options.issueMode ?? "optional";
   const issueUnknown = options.issueUnknown ?? false;
+  const issueNearMiss = options.issueNearMiss ?? false;
+  const trailingPunctuation = options.trailingPunctuation ?? false;
   const enforceLowercase = options.enforceLowercase ?? true;
   const allowedVerbs = getAllowedVerbs({
     verbs: options.verbs,
@@ -20,6 +22,11 @@ export function createPullRequestTitleValidator(
     `^(.*)\\s${issueLikeSuffixPattern}$`,
     "i",
   );
+  const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
+  const issueNearMissRegex =
+    issuePrefix !== "" && issuePrefixNearMissBase !== issuePrefix
+      ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i")
+      : null;
   if (issueMode === "required" && issuePrefix === "" && !issueUnknown) {
     throw new Error(
       "Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.",
@@ -60,6 +67,10 @@ export function createPullRequestTitleValidator(
       if (validMatch) {
         hasKnownIssueSuffix = true;
         subjectCore = validMatch[1];
+      } else if (issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss) {
+        throw new Error(
+          `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
+        );
       } else if (prefixedSuffixRegex.test(subject)) {
         throw new Error(
           `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
@@ -95,6 +106,10 @@ export function createPullRequestTitleValidator(
 
     if (subjectCore.length === 0) {
       throw new Error("PR subject cannot be empty.");
+    }
+
+    if (!trailingPunctuation && /[.!?,;:]$/.test(subjectCore)) {
+      throw new Error("PR subject cannot end with trailing punctuation.");
     }
 
     if (enforceLowercase && /[A-Z]/.test(subjectCore)) {
