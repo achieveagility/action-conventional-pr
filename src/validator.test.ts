@@ -14,6 +14,22 @@ describe("createPullRequestTitleValidator", () => {
     expect(() => validate({ title: "" })).toThrow("Unable to validate PR title. title is empty.");
   });
 
+  it("throws when title has leading whitespace", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: " feat: add logging" })).toThrow(
+      "PR title cannot have leading or trailing whitespace.",
+    );
+  });
+
+  it("throws when title has trailing whitespace", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "feat: add logging " })).toThrow(
+      "PR title cannot have leading or trailing whitespace.",
+    );
+  });
+
   it("throws when title does not have a subject separator", () => {
     const validate = createPullRequestTitleValidator();
 
