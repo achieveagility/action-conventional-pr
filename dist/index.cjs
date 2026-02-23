@@ -52,6 +52,7 @@ function parseBooleanInput(name, value) {
 	throw new Error(`${name} must be either 'true' or 'false'.`);
 }
 function parseVerbsInput(input) {
+	if (input.trim().length === 0) return;
 	return input.split(",").map((verb) => verb.trim()).filter((verb) => verb.length > 0);
 }
 
@@ -67,6 +68,7 @@ function createPullRequestTitleValidator(options = {}) {
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
 		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
+		if (title !== title.trim()) throw new Error("PR title cannot have leading or trailing whitespace.");
 		const titleMatch = /^[^:]+:\s+(.+)$/.exec(title);
 		if (!titleMatch) throw new Error("PR title must include a subject after ': '.");
 		const subject = titleMatch[1];

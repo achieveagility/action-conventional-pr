@@ -53,7 +53,12 @@ export function parseBooleanInput(name: string, value: string): boolean {
   throw new Error(`${name} must be either 'true' or 'false'.`);
 }
 
-export function parseVerbsInput(input: string): string[] {
+export function parseVerbsInput(input: string): string[] | undefined {
+  const trimmedInput = input.trim();
+  if (trimmedInput.length === 0) {
+    return undefined;
+  }
+
   return input
     .split(",")
     .map((verb) => verb.trim())
