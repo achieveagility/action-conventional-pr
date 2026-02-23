@@ -8,18 +8,23 @@ export function createPullRequestTitleValidator(
   options: PullRequestTitleValidatorOptions = {},
 ) {
   const issuePrefix = options.issuePrefix ?? "";
-  const strictIssueSuffix = options.strictIssueSuffix ?? true;
+  const issueMode = options.issueMode ?? "optional";
+  const issueUnknown = options.issueUnknown ?? false;
   const enforceLowercase = options.enforceLowercase ?? true;
   const allowedVerbs = getAllowedVerbs({
     verbs: options.verbs,
     addVerbs: options.addVerbs,
   });
   const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
-  const issueLikeSuffixRegex = /\s(?:[a-z][a-z0-9_]*-\d+|#\d+)$/i;
   const trailingIssueLikeSuffixRegex = new RegExp(
     `^(.*)\\s${issueLikeSuffixPattern}$`,
     "i",
   );
+  if (issueMode === "required" && issuePrefix === "" && !issueUnknown) {
+    throw new Error(
+      "Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.",
+    );
+  }
 
   return ({ title }: PullRequestTitleInput): void => {
     if (title === "") {
@@ -41,6 +46,8 @@ export function createPullRequestTitleValidator(
 
     const subject = titleMatch[1];
     let subjectCore = subject;
+    let hasKnownIssueSuffix = false;
+    let hasUnknownIssueSuffix = false;
 
     if (issuePrefix !== "") {
       const escapedPrefix = escapeRegExp(issuePrefix);
@@ -51,27 +58,39 @@ export function createPullRequestTitleValidator(
 
       const validMatch = validTicketRegex.exec(subject);
       if (validMatch) {
+        hasKnownIssueSuffix = true;
         subjectCore = validMatch[1];
       } else if (prefixedSuffixRegex.test(subject)) {
         throw new Error(
           `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
         );
-      } else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) {
-        throw new Error(
-          `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
-        );
+      } else {
+        const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subject);
+        if (trailingIssueMatch) {
+          hasUnknownIssueSuffix = true;
+          if (!issueUnknown) {
+            throw new Error(
+              `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
+            );
+          }
+          subjectCore = trailingIssueMatch[1];
+        }
       }
-    } else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) {
-      throw new Error(
-        "Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.",
-      );
-    }
-
-    if (!strictIssueSuffix) {
+    } else {
       const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subjectCore);
       if (trailingIssueMatch) {
+        hasUnknownIssueSuffix = true;
+        if (!issueUnknown) {
+          throw new Error(
+            "Issue suffix is not allowed unless issue-unknown is true or issue-prefix is configured.",
+          );
+        }
         subjectCore = trailingIssueMatch[1];
       }
+    }
+
+    if (issueMode === "required" && !hasKnownIssueSuffix && !hasUnknownIssueSuffix) {
+      throw new Error("Issue suffix is required by issue-mode 'required'.");
     }
 
     if (subjectCore.length === 0) {

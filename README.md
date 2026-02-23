@@ -37,8 +37,9 @@ jobs:
 
 ## Rules
 
-- If `issue-prefix` is set, the optional suffix must be `${prefix}<positive-integer>` and appear at the end of the subject.
-- `strict-issue-suffix` is optional (`true` by default). When enabled, issue-like suffixes (such as `ABC-123` or `#123`) are rejected unless they match `issue-prefix`.
+- `issue-prefix` is optional. When present, a matching suffix format is `${prefix}<positive-integer>` (for example `foo-123`).
+- `issue-mode` is optional (`optional` by default). Set to `required` to require an issue suffix.
+- `issue-unknown` is optional (`false` by default). When `false`, issue-like suffixes must match `issue-prefix` if present. When `true`, unknown suffixes like `BAR-123` or `#123` are allowed.
 - `enforce-lowercase` is optional (`true` by default). Set it to `false` to allow uppercase letters in the subject.
 - `verbs` is optional and overrides the default allowed first-word verb list (comma-separated).
 - `add-verbs` is optional and adds verbs to the default allowed list (comma-separated). Duplicates are removed.

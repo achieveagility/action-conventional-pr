@@ -148,17 +148,25 @@ describe("createPullRequestTitleValidator", () => {
     );
   });
 
+  it("allows missing issue suffix when issue-prefix is configured and mode is optional", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "ABC-",
+    });
+
+    expect(() => validate({ title: "feat: add logging" })).not.toThrow();
+  });
+
   it("throws when issue-like suffix is used without issue-prefix by default", () => {
     const validate = createPullRequestTitleValidator();
 
     expect(() => validate({ title: "feat: add logging ABC-123" })).toThrow(
-      "Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.",
+      "Issue suffix is not allowed unless issue-unknown is true or issue-prefix is configured.",
     );
   });
 
-  it("allows issue-like suffix without issue-prefix when strictIssueSuffix is false", () => {
+  it("allows issue-like suffix without issue-prefix when issueUnknown is true", () => {
     const validate = createPullRequestTitleValidator({
-      strictIssueSuffix: false,
+      issueUnknown: true,
     });
 
     expect(() =>
@@ -177,14 +185,59 @@ describe("createPullRequestTitleValidator", () => {
     );
   });
 
-  it("allows different issue format with configured issue-prefix when strictIssueSuffix is false", () => {
+  it("allows different issue format with configured issue-prefix when issueUnknown is true", () => {
     const validate = createPullRequestTitleValidator({
       issuePrefix: "ABC-",
-      strictIssueSuffix: false,
+      issueUnknown: true,
     });
 
     expect(() =>
       validate({ title: "feat: add logging XYZ-123" }),
     ).not.toThrow();
+  });
+
+  it("requires issue suffix when issueMode is required with issue-prefix", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "ABC-",
+      issueMode: "required",
+    });
+
+    expect(() => validate({ title: "feat: add logging" })).toThrow(
+      "Issue suffix is required by issue-mode 'required'.",
+    );
+  });
+
+  it("accepts valid prefixed issue suffix when issueMode is required with issue-prefix", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "ABC-",
+      issueMode: "required",
+    });
+
+    expect(() =>
+      validate({ title: "feat: add logging ABC-123" }),
+    ).not.toThrow();
+  });
+
+  it("requires issue-like suffix when issueMode is required and issueUnknown is true", () => {
+    const validate = createPullRequestTitleValidator({
+      issueMode: "required",
+      issueUnknown: true,
+    });
+
+    expect(() => validate({ title: "feat: add logging" })).toThrow(
+      "Issue suffix is required by issue-mode 'required'.",
+    );
+    expect(() => validate({ title: "feat: add logging #123" })).not.toThrow();
+  });
+
+  it("throws on impossible issue configuration", () => {
+    expect(() =>
+      createPullRequestTitleValidator({
+        issueMode: "required",
+        issueUnknown: false,
+      }),
+    ).toThrow(
+      "Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.",
+    );
   });
 });

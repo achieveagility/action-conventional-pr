@@ -1,4 +1,5 @@
 import { defaultImperativeVerbs } from "./verbs";
+import type { IssueMode } from "./types";
 
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -63,4 +64,13 @@ export function parseVerbsInput(input: string): string[] | undefined {
     .split(",")
     .map((verb) => verb.trim())
     .filter((verb) => verb.length > 0);
+}
+
+export function parseIssueModeInput(value: string): IssueMode {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "optional" || normalized === "required") {
+    return normalized;
+  }
+
+  throw new Error("issue-mode must be either 'optional' or 'required'.");
 }
