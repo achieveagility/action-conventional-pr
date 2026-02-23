@@ -6,6 +6,10 @@ inputs:
     description: "Optional issue prefix for a suffix at the end of the subject (for example, PROJ- to allow '... PROJ-123')."
     required: false
     default: ""
+  strict-issue-suffix:
+    description: "Whether trailing issue-like suffixes are only allowed when they match issue-prefix (`true` or `false`)."
+    required: false
+    default: "true"
   enforce-lowercase:
     description: "Whether the PR subject must be lowercase (`true` or `false`)."
     required: false
@@ -32,6 +36,7 @@ runs:
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
         ISSUE_PREFIX: ${{ inputs.issue-prefix }}
+        STRICT_ISSUE_SUFFIX: ${{ inputs.strict-issue-suffix }}
         ENFORCE_LOWERCASE: ${{ inputs.enforce-lowercase }}
         VERBS: ${{ inputs.verbs }}
         ADD_VERBS: ${{ inputs.add-verbs }}

@@ -11,7 +11,9 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when title is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "" })).toThrow("Unable to validate PR title. title is empty.");
+    expect(() => validate({ title: "" })).toThrow(
+      "Unable to validate PR title. title is empty.",
+    );
   });
 
   it("throws when title has leading whitespace", () => {
@@ -41,7 +43,9 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when subject is empty", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "feat: " })).toThrow("PR subject cannot be empty.");
+    expect(() => validate({ title: "feat: " })).toThrow(
+      "PR subject cannot be empty.",
+    );
   });
 
   it("throws when subject contains uppercase by default", () => {
@@ -64,7 +68,7 @@ describe("createPullRequestTitleValidator", () => {
     const validate = createPullRequestTitleValidator();
 
     expect(() => validate({ title: "feat: ship logging" })).toThrow(
-      "PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor).",
+      "PR subject must start with an allowed imperative verb, for example: 'add', 'adjust', 'bump', 'change', 'clean', 'create', 'disable', 'document', 'drop', 'enable', 'fix', 'implement', 'improve', 'introduce', 'migrate', 'refactor', 'remove', 'rename', 'replace', 'revert', 'simplify', 'update', 'upgrade'.",
     );
   });
 
@@ -109,7 +113,9 @@ describe("createPullRequestTitleValidator", () => {
       issuePrefix: "ABC-",
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
+    expect(() =>
+      validate({ title: "feat: add logging ABC-123" }),
+    ).not.toThrow();
   });
 
   it("throws when subject has uppercase even with a valid issue suffix", () => {
@@ -140,5 +146,45 @@ describe("createPullRequestTitleValidator", () => {
     expect(() => validate({ title: "feat: add logging ABC-001" })).toThrow(
       "Issue suffix is invalid. Expected 'ABC-<positive-integer>' (for example ABC-123).",
     );
+  });
+
+  it("throws when issue-like suffix is used without issue-prefix by default", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "feat: add logging ABC-123" })).toThrow(
+      "Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.",
+    );
+  });
+
+  it("allows issue-like suffix without issue-prefix when strictIssueSuffix is false", () => {
+    const validate = createPullRequestTitleValidator({
+      strictIssueSuffix: false,
+    });
+
+    expect(() =>
+      validate({ title: "feat: add logging ABC-123" }),
+    ).not.toThrow();
+    expect(() => validate({ title: "feat: add logging #123" })).not.toThrow();
+  });
+
+  it("throws when suffix uses a different issue format while issue-prefix is configured", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "ABC-",
+    });
+
+    expect(() => validate({ title: "feat: add logging XYZ-123" })).toThrow(
+      "Issue suffix is invalid. Expected 'ABC-<positive-integer>' (for example ABC-123).",
+    );
+  });
+
+  it("allows different issue format with configured issue-prefix when strictIssueSuffix is false", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: "ABC-",
+      strictIssueSuffix: false,
+    });
+
+    expect(() =>
+      validate({ title: "feat: add logging XYZ-123" }),
+    ).not.toThrow();
   });
 });
