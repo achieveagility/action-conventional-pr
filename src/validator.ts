@@ -18,6 +18,10 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
       throw new Error("PR subject cannot be empty.");
     }
 
+    if (title !== title.trim()) {
+      throw new Error("PR title cannot have leading or trailing whitespace.");
+    }
+
     const titleMatch = /^[^:]+:\s+(.+)$/.exec(title);
     if (!titleMatch) {
       throw new Error("PR title must include a subject after ': '.");
