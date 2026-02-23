@@ -1,6 +1,9 @@
+export type IssueMode = "optional" | "required";
+
 export type PullRequestTitleValidatorOptions = {
   issuePrefix?: string;
-  strictIssueSuffix?: boolean;
+  issueMode?: IssueMode;
+  issueUnknown?: boolean;
   enforceLowercase?: boolean;
   verbs?: readonly string[];
   addVerbs?: readonly string[];

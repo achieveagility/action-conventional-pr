@@ -8,7 +8,8 @@ describe("runFromEnv", () => {
       ...originalEnv,
       PR_TITLE: "feat: add logging",
       ISSUE_PREFIX: "",
-      STRICT_ISSUE_SUFFIX: "true",
+      ISSUE_MODE: "optional",
+      ISSUE_UNKNOWN: "false",
       ENFORCE_LOWERCASE: "true",
       VERBS: "",
       ADD_VERBS: "",
@@ -21,13 +22,14 @@ describe("runFromEnv", () => {
     }
   });
 
-  it("rejects issue-like suffix when strict-issue-suffix is true", () => {
+  it("rejects issue-like suffix when issue-unknown is false", () => {
     const originalEnv = process.env;
     process.env = {
       ...originalEnv,
       PR_TITLE: "feat: add logging ABC-123",
       ISSUE_PREFIX: "",
-      STRICT_ISSUE_SUFFIX: "true",
+      ISSUE_MODE: "optional",
+      ISSUE_UNKNOWN: "false",
       ENFORCE_LOWERCASE: "true",
       VERBS: "",
       ADD_VERBS: "",
@@ -35,20 +37,21 @@ describe("runFromEnv", () => {
 
     try {
       expect(() => runFromEnv()).toThrow(
-        "Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.",
+        "Issue suffix is not allowed unless issue-unknown is true or issue-prefix is configured.",
       );
     } finally {
       process.env = originalEnv;
     }
   });
 
-  it("allows issue-like suffix when strict-issue-suffix is false", () => {
+  it("allows issue-like suffix when issue-unknown is true", () => {
     const originalEnv = process.env;
     process.env = {
       ...originalEnv,
       PR_TITLE: "feat: add logging ABC-123",
       ISSUE_PREFIX: "",
-      STRICT_ISSUE_SUFFIX: "false",
+      ISSUE_MODE: "optional",
+      ISSUE_UNKNOWN: "true",
       ENFORCE_LOWERCASE: "true",
       VERBS: "",
       ADD_VERBS: "",
@@ -56,6 +59,28 @@ describe("runFromEnv", () => {
 
     try {
       expect(() => runFromEnv()).not.toThrow();
+    } finally {
+      process.env = originalEnv;
+    }
+  });
+
+  it("requires issue suffix when issue-mode is required", () => {
+    const originalEnv = process.env;
+    process.env = {
+      ...originalEnv,
+      PR_TITLE: "feat: add logging",
+      ISSUE_PREFIX: "ABC-",
+      ISSUE_MODE: "required",
+      ISSUE_UNKNOWN: "false",
+      ENFORCE_LOWERCASE: "true",
+      VERBS: "",
+      ADD_VERBS: "",
+    };
+
+    try {
+      expect(() => runFromEnv()).toThrow(
+        "Issue suffix is required by issue-mode 'required'.",
+      );
     } finally {
       process.env = originalEnv;
     }

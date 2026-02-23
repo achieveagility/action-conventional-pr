@@ -1,17 +1,23 @@
-import { parseBooleanInput, parseVerbsInput } from "./parsing";
+import {
+  parseBooleanInput,
+  parseIssueModeInput,
+  parseVerbsInput,
+} from "./parsing";
 import { createPullRequestTitleValidator } from "./validator";
 
 export function runFromEnv(): void {
   const title = process.env.PR_TITLE ?? "";
   const issuePrefix = process.env.ISSUE_PREFIX ?? "";
-  const strictIssueSuffixInput = process.env.STRICT_ISSUE_SUFFIX ?? "true";
+  const issueModeInput = process.env.ISSUE_MODE ?? "optional";
+  const issueUnknownInput = process.env.ISSUE_UNKNOWN ?? "false";
   const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
   const verbsInput = process.env.VERBS ?? "";
   const addVerbsInput = process.env.ADD_VERBS ?? "";
 
   const validatePullRequestTitle = createPullRequestTitleValidator({
     issuePrefix,
-    strictIssueSuffix: parseBooleanInput("strict-issue-suffix", strictIssueSuffixInput),
+    issueMode: parseIssueModeInput(issueModeInput),
+    issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
     enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
     verbs: parseVerbsInput(verbsInput),
     addVerbs: parseVerbsInput(addVerbsInput),

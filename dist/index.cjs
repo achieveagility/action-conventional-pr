@@ -55,20 +55,25 @@ function parseVerbsInput(input) {
 	if (input.trim().length === 0) return;
 	return input.split(",").map((verb) => verb.trim()).filter((verb) => verb.length > 0);
 }
+function parseIssueModeInput(value) {
+	const normalized = value.trim().toLowerCase();
+	if (normalized === "optional" || normalized === "required") return normalized;
+	throw new Error("issue-mode must be either 'optional' or 'required'.");
+}
 
 //#endregion
 //#region src/validator.ts
 function createPullRequestTitleValidator(options = {}) {
 	const issuePrefix = options.issuePrefix ?? "";
-	const strictIssueSuffix = options.strictIssueSuffix ?? true;
+	const issueMode = options.issueMode ?? "optional";
+	const issueUnknown = options.issueUnknown ?? false;
 	const enforceLowercase = options.enforceLowercase ?? true;
 	const allowedVerbs = getAllowedVerbs({
 		verbs: options.verbs,
 		addVerbs: options.addVerbs
 	});
-	const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
-	const issueLikeSuffixRegex = /\s(?:[a-z][a-z0-9_]*-\d+|#\d+)$/i;
-	const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s${issueLikeSuffixPattern}$`, "i");
+	const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)$`, "i");
+	if (issueMode === "required" && issuePrefix === "" && !issueUnknown) throw new Error("Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.");
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
 		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
@@ -77,19 +82,34 @@ function createPullRequestTitleValidator(options = {}) {
 		if (!titleMatch) throw new Error("PR title must include a subject after ': '.");
 		const subject = titleMatch[1];
 		let subjectCore = subject;
+		let hasKnownIssueSuffix = false;
+		let hasUnknownIssueSuffix = false;
 		if (issuePrefix !== "") {
 			const escapedPrefix = escapeRegExp(issuePrefix);
 			const validTicketRegex = new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`);
 			const prefixedSuffixRegex = new RegExp(`\\s${escapedPrefix}[0-9]+$`);
 			const validMatch = validTicketRegex.exec(subject);
-			if (validMatch) subjectCore = validMatch[1];
-			else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
-			else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
-		} else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) throw new Error("Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.");
-		if (!strictIssueSuffix) {
+			if (validMatch) {
+				hasKnownIssueSuffix = true;
+				subjectCore = validMatch[1];
+			} else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+			else {
+				const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subject);
+				if (trailingIssueMatch) {
+					hasUnknownIssueSuffix = true;
+					if (!issueUnknown) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+					subjectCore = trailingIssueMatch[1];
+				}
+			}
+		} else {
 			const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subjectCore);
-			if (trailingIssueMatch) subjectCore = trailingIssueMatch[1];
+			if (trailingIssueMatch) {
+				hasUnknownIssueSuffix = true;
+				if (!issueUnknown) throw new Error("Issue suffix is not allowed unless issue-unknown is true or issue-prefix is configured.");
+				subjectCore = trailingIssueMatch[1];
+			}
 		}
+		if (issueMode === "required" && !hasKnownIssueSuffix && !hasUnknownIssueSuffix) throw new Error("Issue suffix is required by issue-mode 'required'.");
 		if (subjectCore.length === 0) throw new Error("PR subject cannot be empty.");
 		if (enforceLowercase && /[A-Z]/.test(subjectCore)) throw new Error("PR subject must be all lowercase.");
 		const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
@@ -102,13 +122,15 @@ function createPullRequestTitleValidator(options = {}) {
 function runFromEnv() {
 	const title = process.env.PR_TITLE ?? "";
 	const issuePrefix = process.env.ISSUE_PREFIX ?? "";
-	const strictIssueSuffixInput = process.env.STRICT_ISSUE_SUFFIX ?? "true";
+	const issueModeInput = process.env.ISSUE_MODE ?? "optional";
+	const issueUnknownInput = process.env.ISSUE_UNKNOWN ?? "false";
 	const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
 	const verbsInput = process.env.VERBS ?? "";
 	const addVerbsInput = process.env.ADD_VERBS ?? "";
 	createPullRequestTitleValidator({
 		issuePrefix,
-		strictIssueSuffix: parseBooleanInput("strict-issue-suffix", strictIssueSuffixInput),
+		issueMode: parseIssueModeInput(issueModeInput),
+		issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
 		enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
 		verbs: parseVerbsInput(verbsInput),
 		addVerbs: parseVerbsInput(addVerbsInput)
