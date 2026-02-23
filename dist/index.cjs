@@ -67,12 +67,16 @@ function createPullRequestTitleValidator(options = {}) {
 	const issuePrefix = options.issuePrefix ?? "";
 	const issueMode = options.issueMode ?? "optional";
 	const issueUnknown = options.issueUnknown ?? false;
+	const issueNearMiss = options.issueNearMiss ?? false;
+	const trailingPunctuation = options.trailingPunctuation ?? false;
 	const enforceLowercase = options.enforceLowercase ?? true;
 	const allowedVerbs = getAllowedVerbs({
 		verbs: options.verbs,
 		addVerbs: options.addVerbs
 	});
 	const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)$`, "i");
+	const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
+	const issueNearMissRegex = issuePrefix !== "" && issuePrefixNearMissBase !== issuePrefix ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i") : null;
 	if (issueMode === "required" && issuePrefix === "" && !issueUnknown) throw new Error("Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.");
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
@@ -92,7 +96,8 @@ function createPullRequestTitleValidator(options = {}) {
 			if (validMatch) {
 				hasKnownIssueSuffix = true;
 				subjectCore = validMatch[1];
-			} else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+			} else if (issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+			else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
 			else {
 				const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subject);
 				if (trailingIssueMatch) {
@@ -111,6 +116,7 @@ function createPullRequestTitleValidator(options = {}) {
 		}
 		if (issueMode === "required" && !hasKnownIssueSuffix && !hasUnknownIssueSuffix) throw new Error("Issue suffix is required by issue-mode 'required'.");
 		if (subjectCore.length === 0) throw new Error("PR subject cannot be empty.");
+		if (!trailingPunctuation && /[.!?,;:]$/.test(subjectCore)) throw new Error("PR subject cannot end with trailing punctuation.");
 		if (enforceLowercase && /[A-Z]/.test(subjectCore)) throw new Error("PR subject must be all lowercase.");
 		const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
 		if (!allowedVerbs.has(firstWord)) throw new Error(["PR subject must start with an allowed imperative verb,", `for example: ${Array.from(allowedVerbs).map((verb) => `'${verb}'`).join(", ")}.`].join(" "));
@@ -124,6 +130,8 @@ function runFromEnv() {
 	const issuePrefix = process.env.ISSUE_PREFIX ?? "";
 	const issueModeInput = process.env.ISSUE_MODE ?? "optional";
 	const issueUnknownInput = process.env.ISSUE_UNKNOWN ?? "false";
+	const issueNearMissInput = process.env.ISSUE_NEAR_MISS ?? "false";
+	const trailingPunctuationInput = process.env.TRAILING_PUNCTUATION ?? "false";
 	const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
 	const verbsInput = process.env.VERBS ?? "";
 	const addVerbsInput = process.env.ADD_VERBS ?? "";
@@ -131,6 +139,8 @@ function runFromEnv() {
 		issuePrefix,
 		issueMode: parseIssueModeInput(issueModeInput),
 		issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
+		issueNearMiss: parseBooleanInput("issue-near-miss", issueNearMissInput),
+		trailingPunctuation: parseBooleanInput("trailing-punctuation", trailingPunctuationInput),
 		enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
 		verbs: parseVerbsInput(verbsInput),
 		addVerbs: parseVerbsInput(addVerbsInput)
