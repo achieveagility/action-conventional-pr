@@ -1,13 +1,25 @@
 import { escapeRegExp, getAllowedVerbs } from "./parsing";
-import type { PullRequestTitleInput, PullRequestTitleValidatorOptions } from "./types";
+import type {
+  PullRequestTitleInput,
+  PullRequestTitleValidatorOptions,
+} from "./types";
 
-export function createPullRequestTitleValidator(options: PullRequestTitleValidatorOptions = {}) {
+export function createPullRequestTitleValidator(
+  options: PullRequestTitleValidatorOptions = {},
+) {
   const issuePrefix = options.issuePrefix ?? "";
+  const strictIssueSuffix = options.strictIssueSuffix ?? true;
   const enforceLowercase = options.enforceLowercase ?? true;
   const allowedVerbs = getAllowedVerbs({
     verbs: options.verbs,
     addVerbs: options.addVerbs,
   });
+  const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
+  const issueLikeSuffixRegex = /\s(?:[a-z][a-z0-9_]*-\d+|#\d+)$/i;
+  const trailingIssueLikeSuffixRegex = new RegExp(
+    `^(.*)\\s${issueLikeSuffixPattern}$`,
+    "i",
+  );
 
   return ({ title }: PullRequestTitleInput): void => {
     if (title === "") {
@@ -32,7 +44,9 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
 
     if (issuePrefix !== "") {
       const escapedPrefix = escapeRegExp(issuePrefix);
-      const validTicketRegex = new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`);
+      const validTicketRegex = new RegExp(
+        `^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`,
+      );
       const prefixedSuffixRegex = new RegExp(`\\s${escapedPrefix}[0-9]+$`);
 
       const validMatch = validTicketRegex.exec(subject);
@@ -42,6 +56,21 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
         throw new Error(
           `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
         );
+      } else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) {
+        throw new Error(
+          `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
+        );
+      }
+    } else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) {
+      throw new Error(
+        "Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.",
+      );
+    }
+
+    if (!strictIssueSuffix) {
+      const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subjectCore);
+      if (trailingIssueMatch) {
+        subjectCore = trailingIssueMatch[1];
       }
     }
 
@@ -56,7 +85,12 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
     const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
     if (!allowedVerbs.has(firstWord)) {
       throw new Error(
-        "PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor).",
+        [
+          "PR subject must start with an allowed imperative verb,",
+          `for example: ${Array.from(allowedVerbs)
+            .map((verb) => `'${verb}'`)
+            .join(", ")}.`,
+        ].join(" "),
       );
     }
   };

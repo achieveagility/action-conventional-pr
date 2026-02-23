@@ -60,11 +60,15 @@ function parseVerbsInput(input) {
 //#region src/validator.ts
 function createPullRequestTitleValidator(options = {}) {
 	const issuePrefix = options.issuePrefix ?? "";
+	const strictIssueSuffix = options.strictIssueSuffix ?? true;
 	const enforceLowercase = options.enforceLowercase ?? true;
 	const allowedVerbs = getAllowedVerbs({
 		verbs: options.verbs,
 		addVerbs: options.addVerbs
 	});
+	const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
+	const issueLikeSuffixRegex = /\s(?:[a-z][a-z0-9_]*-\d+|#\d+)$/i;
+	const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s${issueLikeSuffixPattern}$`, "i");
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
 		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
@@ -80,11 +84,16 @@ function createPullRequestTitleValidator(options = {}) {
 			const validMatch = validTicketRegex.exec(subject);
 			if (validMatch) subjectCore = validMatch[1];
 			else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+			else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+		} else if (strictIssueSuffix && issueLikeSuffixRegex.test(subject)) throw new Error("Issue suffix is not allowed unless issue-prefix is configured. Set strict-issue-suffix to false to allow it.");
+		if (!strictIssueSuffix) {
+			const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subjectCore);
+			if (trailingIssueMatch) subjectCore = trailingIssueMatch[1];
 		}
 		if (subjectCore.length === 0) throw new Error("PR subject cannot be empty.");
 		if (enforceLowercase && /[A-Z]/.test(subjectCore)) throw new Error("PR subject must be all lowercase.");
 		const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
-		if (!allowedVerbs.has(firstWord)) throw new Error("PR subject must start with an allowed imperative verb (for example: add, update, fix, remove, refactor).");
+		if (!allowedVerbs.has(firstWord)) throw new Error(["PR subject must start with an allowed imperative verb,", `for example: ${Array.from(allowedVerbs).map((verb) => `'${verb}'`).join(", ")}.`].join(" "));
 	};
 }
 
@@ -93,11 +102,13 @@ function createPullRequestTitleValidator(options = {}) {
 function runFromEnv() {
 	const title = process.env.PR_TITLE ?? "";
 	const issuePrefix = process.env.ISSUE_PREFIX ?? "";
+	const strictIssueSuffixInput = process.env.STRICT_ISSUE_SUFFIX ?? "true";
 	const enforceLowercaseInput = process.env.ENFORCE_LOWERCASE ?? "true";
 	const verbsInput = process.env.VERBS ?? "";
 	const addVerbsInput = process.env.ADD_VERBS ?? "";
 	createPullRequestTitleValidator({
 		issuePrefix,
+		strictIssueSuffix: parseBooleanInput("strict-issue-suffix", strictIssueSuffixInput),
 		enforceLowercase: parseBooleanInput("enforce-lowercase", enforceLowercaseInput),
 		verbs: parseVerbsInput(verbsInput),
 		addVerbs: parseVerbsInput(addVerbsInput)

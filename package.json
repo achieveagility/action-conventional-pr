@@ -23,6 +23,7 @@
     "format:check": "oxfmt --check",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:watch": "vitest",
     "build": "tsdown",
     "types:check": "tsc -p tsconfig.json"
   },
