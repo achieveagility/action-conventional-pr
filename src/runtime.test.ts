@@ -28,7 +28,7 @@ describe("runFromEnv", () => {
     const originalEnv = process.env;
     process.env = {
       ...originalEnv,
-      PR_TITLE: "feat: add logging ABC-123",
+      PR_TITLE: "feat: add logging abc-123",
       ISSUE_PREFIX: "",
       ISSUE_MODE: "optional",
       ISSUE_UNKNOWN: "false",
@@ -52,7 +52,7 @@ describe("runFromEnv", () => {
     const originalEnv = process.env;
     process.env = {
       ...originalEnv,
-      PR_TITLE: "feat: add logging ABC-123",
+      PR_TITLE: "feat: add logging abc-123",
       ISSUE_PREFIX: "",
       ISSUE_MODE: "optional",
       ISSUE_UNKNOWN: "true",
@@ -75,7 +75,7 @@ describe("runFromEnv", () => {
     process.env = {
       ...originalEnv,
       PR_TITLE: "feat: add logging",
-      ISSUE_PREFIX: "ABC-",
+      ISSUE_PREFIX: "abc-",
       ISSUE_MODE: "required",
       ISSUE_UNKNOWN: "false",
       ISSUE_NEAR_MISS: "false",
@@ -109,6 +109,50 @@ describe("runFromEnv", () => {
 
     try {
       expect(() => runFromEnv()).toThrow("PR subject cannot end with trailing punctuation.");
+    } finally {
+      process.env = originalEnv;
+    }
+  });
+
+  it("rejects uppercase anywhere when enforce-lowercase is true", () => {
+    const originalEnv = process.env;
+    process.env = {
+      ...originalEnv,
+      PR_TITLE: "CHORE(api): add logging",
+      ISSUE_PREFIX: "",
+      ISSUE_MODE: "optional",
+      ISSUE_UNKNOWN: "false",
+      ISSUE_NEAR_MISS: "false",
+      TRAILING_PUNCTUATION: "false",
+      ENFORCE_LOWERCASE: "true",
+      VERBS: "",
+      ADD_VERBS: "",
+    };
+
+    try {
+      expect(() => runFromEnv()).toThrow("PR title must be all lowercase.");
+    } finally {
+      process.env = originalEnv;
+    }
+  });
+
+  it("rejects repeated spaces", () => {
+    const originalEnv = process.env;
+    process.env = {
+      ...originalEnv,
+      PR_TITLE: "chore: add   logging",
+      ISSUE_PREFIX: "",
+      ISSUE_MODE: "optional",
+      ISSUE_UNKNOWN: "false",
+      ISSUE_NEAR_MISS: "false",
+      TRAILING_PUNCTUATION: "false",
+      ENFORCE_LOWERCASE: "true",
+      VERBS: "",
+      ADD_VERBS: "",
+    };
+
+    try {
+      expect(() => runFromEnv()).toThrow("PR title cannot contain repeated spaces.");
     } finally {
       process.env = originalEnv;
     }

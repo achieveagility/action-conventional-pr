@@ -44,11 +44,27 @@ describe("createPullRequestTitleValidator", () => {
     expect(() => validate({ title: "feat: " })).toThrow("PR subject cannot be empty.");
   });
 
-  it("throws when subject contains uppercase by default", () => {
+  it("throws when title contains uppercase by default", () => {
     const validate = createPullRequestTitleValidator();
 
     expect(() => validate({ title: "feat: Add logging" })).toThrow(
-      "PR subject must be all lowercase.",
+      "PR title must be all lowercase.",
+    );
+  });
+
+  it("throws when type contains uppercase by default", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "CHORE: add logging" })).toThrow(
+      "PR title must be all lowercase.",
+    );
+  });
+
+  it("throws when scope contains uppercase by default", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "chore(API): add logging" })).toThrow(
+      "PR title must be all lowercase.",
     );
   });
 
@@ -106,45 +122,45 @@ describe("createPullRequestTitleValidator", () => {
 
   it("accepts valid issue suffix when configured", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
+    expect(() => validate({ title: "feat: add logging abc-123" })).not.toThrow();
   });
 
   it("throws when subject has uppercase even with a valid issue suffix", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
-    expect(() => validate({ title: "feat: Add logging ABC-123" })).toThrow(
-      "PR subject must be all lowercase.",
+    expect(() => validate({ title: "feat: Add logging abc-123" })).toThrow(
+      "PR title must be all lowercase.",
     );
   });
 
   it("throws for zero-valued issue suffix when configured", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-0" })).toThrow(
-      "Issue suffix is invalid. Expected 'ABC-<positive-integer>' (for example ABC-123).",
+    expect(() => validate({ title: "feat: add logging abc-0" })).toThrow(
+      "Issue suffix is invalid. Expected 'abc-<positive-integer>' (for example abc-123).",
     );
   });
 
   it("throws for malformed issue suffix when configured", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-001" })).toThrow(
-      "Issue suffix is invalid. Expected 'ABC-<positive-integer>' (for example ABC-123).",
+    expect(() => validate({ title: "feat: add logging abc-001" })).toThrow(
+      "Issue suffix is invalid. Expected 'abc-<positive-integer>' (for example abc-123).",
     );
   });
 
   it("allows missing issue suffix when issue-prefix is configured and mode is optional", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
     expect(() => validate({ title: "feat: add logging" })).not.toThrow();
@@ -153,7 +169,7 @@ describe("createPullRequestTitleValidator", () => {
   it("throws when issue-like suffix is used without issue-prefix by default", () => {
     const validate = createPullRequestTitleValidator();
 
-    expect(() => validate({ title: "feat: add logging ABC-123" })).toThrow(
+    expect(() => validate({ title: "feat: add logging abc-123" })).toThrow(
       "Issue suffix is not allowed unless issue-unknown is true or issue-prefix is configured.",
     );
   });
@@ -163,32 +179,32 @@ describe("createPullRequestTitleValidator", () => {
       issueUnknown: true,
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
+    expect(() => validate({ title: "feat: add logging abc-123" })).not.toThrow();
     expect(() => validate({ title: "feat: add logging #123" })).not.toThrow();
   });
 
   it("throws when suffix uses a different issue format while issue-prefix is configured", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
     });
 
-    expect(() => validate({ title: "feat: add logging XYZ-123" })).toThrow(
-      "Issue suffix is invalid. Expected 'ABC-<positive-integer>' (for example ABC-123).",
+    expect(() => validate({ title: "feat: add logging xyz-123" })).toThrow(
+      "Issue suffix is invalid. Expected 'abc-<positive-integer>' (for example abc-123).",
     );
   });
 
   it("allows different issue format with configured issue-prefix when issueUnknown is true", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
       issueUnknown: true,
     });
 
-    expect(() => validate({ title: "feat: add logging XYZ-123" })).not.toThrow();
+    expect(() => validate({ title: "feat: add logging xyz-123" })).not.toThrow();
   });
 
   it("requires issue suffix when issueMode is required with issue-prefix", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
       issueMode: "required",
     });
 
@@ -199,11 +215,11 @@ describe("createPullRequestTitleValidator", () => {
 
   it("accepts valid prefixed issue suffix when issueMode is required with issue-prefix", () => {
     const validate = createPullRequestTitleValidator({
-      issuePrefix: "ABC-",
+      issuePrefix: "abc-",
       issueMode: "required",
     });
 
-    expect(() => validate({ title: "feat: add logging ABC-123" })).not.toThrow();
+    expect(() => validate({ title: "feat: add logging abc-123" })).not.toThrow();
   });
 
   it("requires issue-like suffix when issueMode is required and issueUnknown is true", () => {
@@ -262,5 +278,16 @@ describe("createPullRequestTitleValidator", () => {
     });
 
     expect(() => validate({ title: "chore: add logging foo123" })).not.toThrow();
+  });
+
+  it("throws when title contains repeated spaces", () => {
+    const validate = createPullRequestTitleValidator();
+
+    expect(() => validate({ title: "chore:    add logging" })).toThrow(
+      "PR title cannot contain repeated spaces.",
+    );
+    expect(() => validate({ title: "chore: add   logging" })).toThrow(
+      "PR title cannot contain repeated spaces.",
+    );
   });
 });
