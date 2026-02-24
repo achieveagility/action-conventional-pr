@@ -82,6 +82,8 @@ function createPullRequestTitleValidator(options = {}) {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
 		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
 		if (title !== title.trim()) throw new Error("PR title cannot have leading or trailing whitespace.");
+		if (/ {2,}/.test(title)) throw new Error("PR title cannot contain repeated spaces.");
+		if (enforceLowercase && /[A-Z]/.test(title)) throw new Error("PR title must be all lowercase.");
 		const titleMatch = /^[^:]+:\s+(.+)$/.exec(title);
 		if (!titleMatch) throw new Error("PR title must include a subject after ': '.");
 		const subject = titleMatch[1];
@@ -117,7 +119,6 @@ function createPullRequestTitleValidator(options = {}) {
 		if (issueMode === "required" && !hasKnownIssueSuffix && !hasUnknownIssueSuffix) throw new Error("Issue suffix is required by issue-mode 'required'.");
 		if (subjectCore.length === 0) throw new Error("PR subject cannot be empty.");
 		if (!trailingPunctuation && /[.!?,;:]$/.test(subjectCore)) throw new Error("PR subject cannot end with trailing punctuation.");
-		if (enforceLowercase && /[A-Z]/.test(subjectCore)) throw new Error("PR subject must be all lowercase.");
 		const firstWord = (subjectCore.split(" ")[0] ?? "").toLowerCase();
 		if (!allowedVerbs.has(firstWord)) throw new Error(["PR subject must start with an allowed imperative verb,", `for example: ${Array.from(allowedVerbs).map((verb) => `'${verb}'`).join(", ")}.`].join(" "));
 	};

@@ -42,7 +42,8 @@ jobs:
 - `issue-unknown` is optional (`false` by default). When `false`, issue-like suffixes must match `issue-prefix` if present. When `true`, unknown suffixes like `BAR-123` or `#123` are allowed.
 - `issue-near-miss` is optional (`false` by default). When `false`, near-miss suffixes like `foo123` are rejected when `issue-prefix` is `foo-`.
 - `trailing-punctuation` is optional (`false` by default). When `false`, subjects cannot end in `.`, `!`, `?`, `,`, `;`, or `:`.
-- `enforce-lowercase` is optional (`true` by default). Set it to `false` to allow uppercase letters in the subject.
+- `enforce-lowercase` is optional (`true` by default). When enabled, uppercase letters are rejected anywhere in the title (`type`, `scope`, and subject).
+- Repeated spaces are not allowed anywhere in the title.
 - `verbs` is optional and overrides the default allowed first-word verb list (comma-separated).
 - `add-verbs` is optional and adds verbs to the default allowed list (comma-separated). Duplicates are removed.
 - `verbs` and `add-verbs` cannot both be set at the same time.
