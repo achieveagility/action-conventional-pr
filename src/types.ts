@@ -1,7 +1,7 @@
 export type IssueMode = "optional" | "required";
 
 export type PullRequestTitleValidatorOptions = {
-  issuePrefix?: string;
+  issuePrefix?: string | readonly string[];
   issueMode?: IssueMode;
   issueUnknown?: boolean;
   issueNearMiss?: boolean;

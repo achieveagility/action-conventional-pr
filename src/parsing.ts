@@ -66,6 +66,19 @@ export function parseVerbsInput(input: string): string[] | undefined {
     .filter((verb) => verb.length > 0);
 }
 
+export function parseIssuePrefixInput(input: string): string | string[] | undefined {
+  const values = input
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+
+  if (values.length === 0) {
+    return undefined;
+  }
+
+  return values.length === 1 ? values[0] : values;
+}
+
 export function parseIssueModeInput(value: string): IssueMode {
   const normalized = value.trim().toLowerCase();
   if (normalized === "optional" || normalized === "required") {

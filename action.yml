@@ -3,7 +3,7 @@ description: "Opinionated PR title validation with semantic format, configurable
 
 inputs:
   issue-prefix:
-    description: "Optional issue prefix for a suffix at the end of the subject (for example, PROJ- to allow '... PROJ-123')."
+    description: "Optional issue prefix or comma-separated list of prefixes for a suffix at the end of the subject (for example, PROJ- or PROJ-,ENG- to allow '... PROJ-123')."
     required: false
     default: ""
   issue-mode:

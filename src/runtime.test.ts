@@ -92,6 +92,28 @@ describe("runFromEnv", () => {
     }
   });
 
+  it("accepts multiple comma-separated issue prefixes", () => {
+    const originalEnv = process.env;
+    process.env = {
+      ...originalEnv,
+      PR_TITLE: "feat: add logging foo-123",
+      ISSUE_PREFIX: "abc-, foo-",
+      ISSUE_MODE: "required",
+      ISSUE_UNKNOWN: "false",
+      ISSUE_NEAR_MISS: "false",
+      TRAILING_PUNCTUATION: "false",
+      ENFORCE_LOWERCASE: "true",
+      VERBS: "",
+      ADD_VERBS: "",
+    };
+
+    try {
+      expect(() => runFromEnv()).not.toThrow();
+    } finally {
+      process.env = originalEnv;
+    }
+  });
+
   it("rejects trailing punctuation when trailing-punctuation is false", () => {
     const originalEnv = process.env;
     process.env = {

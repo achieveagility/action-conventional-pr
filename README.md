@@ -34,10 +34,11 @@ jobs:
 - `feat(api): add endpoint`
 - `ci: update release workflow`
 - `chore: refactor nx config foo-123`
+- `chore: refactor nx config eng-123`
 
 ## Rules
 
-- `issue-prefix` is optional. When present, a matching suffix format is `${prefix}<positive-integer>` (for example `foo-123`).
+- `issue-prefix` is optional. It accepts either a single prefix or a comma-separated list. Matching suffix formats are `${prefix}<positive-integer>` (for example `foo-123`; with `foo-, eng-`, either `foo-123` or `eng-123` is valid).
 - `issue-mode` is optional (`optional` by default). Set to `required` to require an issue suffix.
 - `issue-unknown` is optional (`false` by default). When `false`, issue-like suffixes must match `issue-prefix` if present. When `true`, unknown suffixes like `BAR-123` or `#123` are allowed.
 - `issue-near-miss` is optional (`false` by default). When `false`, near-miss suffixes like `foo123` are rejected when `issue-prefix` is `foo-`.

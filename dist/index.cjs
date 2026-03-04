@@ -55,6 +55,11 @@ function parseVerbsInput(input) {
 	if (input.trim().length === 0) return;
 	return input.split(",").map((verb) => verb.trim()).filter((verb) => verb.length > 0);
 }
+function parseIssuePrefixInput(input) {
+	const values = input.split(",").map((value) => value.trim()).filter((value) => value.length > 0);
+	if (values.length === 0) return;
+	return values.length === 1 ? values[0] : values;
+}
 function parseIssueModeInput(value) {
 	const normalized = value.trim().toLowerCase();
 	if (normalized === "optional" || normalized === "required") return normalized;
@@ -64,7 +69,7 @@ function parseIssueModeInput(value) {
 //#endregion
 //#region src/validator.ts
 function createPullRequestTitleValidator(options = {}) {
-	const issuePrefix = options.issuePrefix ?? "";
+	const issuePrefixes = Array.isArray(options.issuePrefix) ? options.issuePrefix.map((prefix) => prefix.trim()).filter((prefix) => prefix.length > 0) : options.issuePrefix ? [options.issuePrefix.trim()].filter((prefix) => prefix.length > 0) : [];
 	const issueMode = options.issueMode ?? "optional";
 	const issueUnknown = options.issueUnknown ?? false;
 	const issueNearMiss = options.issueNearMiss ?? false;
@@ -75,9 +80,24 @@ function createPullRequestTitleValidator(options = {}) {
 		addVerbs: options.addVerbs
 	});
 	const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)$`, "i");
-	const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
-	const issueNearMissRegex = issuePrefix !== "" && issuePrefixNearMissBase !== issuePrefix ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i") : null;
-	if (issueMode === "required" && issuePrefix === "" && !issueUnknown) throw new Error("Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.");
+	const issuePrefixConfigs = issuePrefixes.map((issuePrefix) => {
+		const escapedPrefix = escapeRegExp(issuePrefix);
+		const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
+		return {
+			issuePrefix,
+			validTicketRegex: new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`),
+			prefixedSuffixRegex: new RegExp(`\\s${escapedPrefix}[0-9]+$`),
+			issueNearMissRegex: issuePrefixNearMissBase !== issuePrefix ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i") : null
+		};
+	});
+	const getIssueSuffixErrorMessage = () => {
+		if (issuePrefixes.length === 1) {
+			const issuePrefix = issuePrefixes[0];
+			return `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`;
+		}
+		return `Issue suffix is invalid. Expected one of: ${issuePrefixes.map((issuePrefix) => `'${issuePrefix}<positive-integer>'`).join(", ")}.`;
+	};
+	if (issueMode === "required" && issuePrefixes.length === 0 && !issueUnknown) throw new Error("Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.");
 	return ({ title }) => {
 		if (title === "") throw new Error("Unable to validate PR title. title is empty.");
 		if (/^[^:]+:\s*$/.test(title)) throw new Error("PR subject cannot be empty.");
@@ -90,21 +110,18 @@ function createPullRequestTitleValidator(options = {}) {
 		let subjectCore = subject;
 		let hasKnownIssueSuffix = false;
 		let hasUnknownIssueSuffix = false;
-		if (issuePrefix !== "") {
-			const escapedPrefix = escapeRegExp(issuePrefix);
-			const validTicketRegex = new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`);
-			const prefixedSuffixRegex = new RegExp(`\\s${escapedPrefix}[0-9]+$`);
-			const validMatch = validTicketRegex.exec(subject);
-			if (validMatch) {
+		if (issuePrefixConfigs.length > 0) {
+			const validPrefixConfig = issuePrefixConfigs.find(({ validTicketRegex }) => validTicketRegex.test(subject));
+			if (validPrefixConfig) {
+				const validMatch = validPrefixConfig.validTicketRegex.exec(subject);
 				hasKnownIssueSuffix = true;
-				subjectCore = validMatch[1];
-			} else if (issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
-			else if (prefixedSuffixRegex.test(subject)) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
-			else {
+				subjectCore = validMatch?.[1] ?? subjectCore;
+			} else {
+				if (issuePrefixConfigs.find(({ issueNearMissRegex, prefixedSuffixRegex }) => prefixedSuffixRegex.test(subject) || !!issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss)) throw new Error(getIssueSuffixErrorMessage());
 				const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subject);
 				if (trailingIssueMatch) {
 					hasUnknownIssueSuffix = true;
-					if (!issueUnknown) throw new Error(`Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`);
+					if (!issueUnknown) throw new Error(getIssueSuffixErrorMessage());
 					subjectCore = trailingIssueMatch[1];
 				}
 			}
@@ -137,7 +154,7 @@ function runFromEnv() {
 	const verbsInput = process.env.VERBS ?? "";
 	const addVerbsInput = process.env.ADD_VERBS ?? "";
 	createPullRequestTitleValidator({
-		issuePrefix,
+		issuePrefix: parseIssuePrefixInput(issuePrefix),
 		issueMode: parseIssueModeInput(issueModeInput),
 		issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
 		issueNearMiss: parseBooleanInput("issue-near-miss", issueNearMissInput),
