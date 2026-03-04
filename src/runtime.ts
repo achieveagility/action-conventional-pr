@@ -1,4 +1,9 @@
-import { parseBooleanInput, parseIssueModeInput, parseVerbsInput } from "./parsing";
+import {
+  parseBooleanInput,
+  parseIssueModeInput,
+  parseIssuePrefixInput,
+  parseVerbsInput,
+} from "./parsing";
 import { createPullRequestTitleValidator } from "./validator";
 
 export function runFromEnv(): void {
@@ -13,7 +18,7 @@ export function runFromEnv(): void {
   const addVerbsInput = process.env.ADD_VERBS ?? "";
 
   const validatePullRequestTitle = createPullRequestTitleValidator({
-    issuePrefix,
+    issuePrefix: parseIssuePrefixInput(issuePrefix),
     issueMode: parseIssueModeInput(issueModeInput),
     issueUnknown: parseBooleanInput("issue-unknown", issueUnknownInput),
     issueNearMiss: parseBooleanInput("issue-near-miss", issueNearMissInput),

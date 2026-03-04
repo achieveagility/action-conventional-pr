@@ -2,7 +2,11 @@ import { escapeRegExp, getAllowedVerbs } from "./parsing";
 import type { PullRequestTitleInput, PullRequestTitleValidatorOptions } from "./types";
 
 export function createPullRequestTitleValidator(options: PullRequestTitleValidatorOptions = {}) {
-  const issuePrefix = options.issuePrefix ?? "";
+  const issuePrefixes = Array.isArray(options.issuePrefix)
+    ? options.issuePrefix.map((prefix) => prefix.trim()).filter((prefix) => prefix.length > 0)
+    : options.issuePrefix
+      ? [options.issuePrefix.trim()].filter((prefix) => prefix.length > 0)
+      : [];
   const issueMode = options.issueMode ?? "optional";
   const issueUnknown = options.issueUnknown ?? false;
   const issueNearMiss = options.issueNearMiss ?? false;
@@ -14,12 +18,31 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
   });
   const issueLikeSuffixPattern = "([a-z][a-z0-9_]*-[0-9]+|#[0-9]+)";
   const trailingIssueLikeSuffixRegex = new RegExp(`^(.*)\\s${issueLikeSuffixPattern}$`, "i");
-  const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
-  const issueNearMissRegex =
-    issuePrefix !== "" && issuePrefixNearMissBase !== issuePrefix
-      ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i")
-      : null;
-  if (issueMode === "required" && issuePrefix === "" && !issueUnknown) {
+  const issuePrefixConfigs = issuePrefixes.map((issuePrefix) => {
+    const escapedPrefix = escapeRegExp(issuePrefix);
+    const issuePrefixNearMissBase = issuePrefix.replace(/[^a-z0-9]+$/i, "");
+
+    return {
+      issuePrefix,
+      validTicketRegex: new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`),
+      prefixedSuffixRegex: new RegExp(`\\s${escapedPrefix}[0-9]+$`),
+      issueNearMissRegex:
+        issuePrefixNearMissBase !== issuePrefix
+          ? new RegExp(`\\s${escapeRegExp(issuePrefixNearMissBase)}[0-9]+$`, "i")
+          : null,
+    };
+  });
+  const getIssueSuffixErrorMessage = () => {
+    if (issuePrefixes.length === 1) {
+      const issuePrefix = issuePrefixes[0];
+      return `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`;
+    }
+
+    return `Issue suffix is invalid. Expected one of: ${issuePrefixes
+      .map((issuePrefix) => `'${issuePrefix}<positive-integer>'`)
+      .join(", ")}.`;
+  };
+  if (issueMode === "required" && issuePrefixes.length === 0 && !issueUnknown) {
     throw new Error(
       "Invalid issue configuration. issue-mode 'required' needs issue-prefix or issue-unknown=true.",
     );
@@ -56,31 +79,31 @@ export function createPullRequestTitleValidator(options: PullRequestTitleValidat
     let hasKnownIssueSuffix = false;
     let hasUnknownIssueSuffix = false;
 
-    if (issuePrefix !== "") {
-      const escapedPrefix = escapeRegExp(issuePrefix);
-      const validTicketRegex = new RegExp(`^(.*)\\s(${escapedPrefix}[1-9][0-9]*)$`);
-      const prefixedSuffixRegex = new RegExp(`\\s${escapedPrefix}[0-9]+$`);
+    if (issuePrefixConfigs.length > 0) {
+      const validPrefixConfig = issuePrefixConfigs.find(({ validTicketRegex }) =>
+        validTicketRegex.test(subject),
+      );
 
-      const validMatch = validTicketRegex.exec(subject);
-      if (validMatch) {
+      if (validPrefixConfig) {
+        const validMatch = validPrefixConfig.validTicketRegex.exec(subject);
         hasKnownIssueSuffix = true;
-        subjectCore = validMatch[1];
-      } else if (issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss) {
-        throw new Error(
-          `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
-        );
-      } else if (prefixedSuffixRegex.test(subject)) {
-        throw new Error(
-          `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
-        );
+        subjectCore = validMatch?.[1] ?? subjectCore;
       } else {
+        const invalidPrefixConfig = issuePrefixConfigs.find(
+          ({ issueNearMissRegex, prefixedSuffixRegex }) =>
+            prefixedSuffixRegex.test(subject) ||
+            (!!issueNearMissRegex && issueNearMissRegex.test(subject) && !issueNearMiss),
+        );
+
+        if (invalidPrefixConfig) {
+          throw new Error(getIssueSuffixErrorMessage());
+        }
+
         const trailingIssueMatch = trailingIssueLikeSuffixRegex.exec(subject);
         if (trailingIssueMatch) {
           hasUnknownIssueSuffix = true;
           if (!issueUnknown) {
-            throw new Error(
-              `Issue suffix is invalid. Expected '${issuePrefix}<positive-integer>' (for example ${issuePrefix}123).`,
-            );
+            throw new Error(getIssueSuffixErrorMessage());
           }
           subjectCore = trailingIssueMatch[1];
         }

@@ -128,6 +128,15 @@ describe("createPullRequestTitleValidator", () => {
     expect(() => validate({ title: "feat: add logging abc-123" })).not.toThrow();
   });
 
+  it("accepts valid issue suffix for any configured prefix", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: ["abc-", "foo-"],
+    });
+
+    expect(() => validate({ title: "feat: add logging abc-123" })).not.toThrow();
+    expect(() => validate({ title: "feat: add logging foo-123" })).not.toThrow();
+  });
+
   it("throws when subject has uppercase even with a valid issue suffix", () => {
     const validate = createPullRequestTitleValidator({
       issuePrefix: "abc-",
@@ -190,6 +199,16 @@ describe("createPullRequestTitleValidator", () => {
 
     expect(() => validate({ title: "feat: add logging xyz-123" })).toThrow(
       "Issue suffix is invalid. Expected 'abc-<positive-integer>' (for example abc-123).",
+    );
+  });
+
+  it("throws with combined expected formats when multiple issue prefixes are configured", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: ["abc-", "foo-"],
+    });
+
+    expect(() => validate({ title: "feat: add logging xyz-123" })).toThrow(
+      "Issue suffix is invalid. Expected one of: 'abc-<positive-integer>', 'foo-<positive-integer>'.",
     );
   });
 
@@ -278,6 +297,15 @@ describe("createPullRequestTitleValidator", () => {
     });
 
     expect(() => validate({ title: "chore: add logging foo123" })).not.toThrow();
+  });
+
+  it("accepts multiple issue prefixes from a plain string array", () => {
+    const validate = createPullRequestTitleValidator({
+      issuePrefix: ["foo-", "bar-"],
+      issueMode: "required",
+    });
+
+    expect(() => validate({ title: "chore: add logging bar-123" })).not.toThrow();
   });
 
   it("throws when title contains repeated spaces", () => {

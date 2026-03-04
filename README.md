@@ -10,6 +10,8 @@ This action wraps [`amannn/action-semantic-pull-request`](https://github.com/ama
 
 ## Usage
 
+### Basic
+
 ```yaml
 name: PR Lint
 
@@ -29,21 +31,55 @@ jobs:
           issue-prefix: "foo-"
 ```
 
+### Full
+
+```yaml
+name: PR Lint
+
+permissions:
+  pull-requests: read
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: achieveagility/action-conventional-pr@v1
+        with:
+          issue-prefix: "foo-, eng-"
+          issue-mode: "optional"
+          issue-unknown: "false"
+          issue-near-miss: "false"
+          trailing-punctuation: "false"
+          enforce-lowercase: "true"
+          add-verbs: "ship, polish"
+```
+
 ## Examples
 
 - `feat(api): add endpoint`
 - `ci: update release workflow`
 - `chore: refactor nx config foo-123`
+- `chore: refactor nx config eng-123`
 
-## Rules
+## Inputs
 
-- `issue-prefix` is optional. When present, a matching suffix format is `${prefix}<positive-integer>` (for example `foo-123`).
-- `issue-mode` is optional (`optional` by default). Set to `required` to require an issue suffix.
-- `issue-unknown` is optional (`false` by default). When `false`, issue-like suffixes must match `issue-prefix` if present. When `true`, unknown suffixes like `BAR-123` or `#123` are allowed.
-- `issue-near-miss` is optional (`false` by default). When `false`, near-miss suffixes like `foo123` are rejected when `issue-prefix` is `foo-`.
-- `trailing-punctuation` is optional (`false` by default). When `false`, subjects cannot end in `.`, `!`, `?`, `,`, `;`, or `:`.
-- `enforce-lowercase` is optional (`true` by default). When enabled, uppercase letters are rejected anywhere in the title (`type`, `scope`, and subject).
+| Input                  | Default    | Description                                                                                                                          |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `issue-prefix`         | `""`       | Optional single prefix or comma-separated list of prefixes. Valid suffixes use `${prefix}<positive-integer>`, for example `foo-123`. |
+| `issue-mode`           | `optional` | Issue suffix policy: `optional` or `required`.                                                                                       |
+| `issue-unknown`        | `false`    | Allow unknown issue-like suffixes such as `bar-123` or `#123`.                                                                       |
+| `issue-near-miss`      | `false`    | Allow near-miss suffixes such as `foo123` when `issue-prefix` is `foo-`.                                                             |
+| `trailing-punctuation` | `false`    | Allow the subject to end with `.`, `!`, `?`, `,`, `;`, or `:`.                                                                       |
+| `enforce-lowercase`    | `true`     | Require the entire PR title to be lowercase, including type, scope, and subject.                                                     |
+| `verbs`                | `""`       | Optional comma-separated list of allowed imperative verbs. Overrides the default verb list.                                          |
+| `add-verbs`            | `""`       | Optional comma-separated list of imperative verbs to add to the default list.                                                        |
+
+## Validation Notes
+
 - Repeated spaces are not allowed anywhere in the title.
-- `verbs` is optional and overrides the default allowed first-word verb list (comma-separated).
-- `add-verbs` is optional and adds verbs to the default allowed list (comma-separated). Duplicates are removed.
+- If `issue-prefix` is set to multiple values, any matching prefix is accepted, for example `foo-, eng-`.
 - `verbs` and `add-verbs` cannot both be set at the same time.
