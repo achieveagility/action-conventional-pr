@@ -38,16 +38,16 @@ jobs:
 
 ## Inputs
 
-| Input | Default | Description |
-| --- | --- | --- |
-| `issue-prefix` | `""` | Optional single prefix or comma-separated list of prefixes. Valid suffixes use `${prefix}<positive-integer>`, for example `foo-123`. |
-| `issue-mode` | `optional` | Issue suffix policy: `optional` or `required`. |
-| `issue-unknown` | `false` | Allow unknown issue-like suffixes such as `bar-123` or `#123`. |
-| `issue-near-miss` | `false` | Allow near-miss suffixes such as `foo123` when `issue-prefix` is `foo-`. |
-| `trailing-punctuation` | `false` | Allow the subject to end with `.`, `!`, `?`, `,`, `;`, or `:`. |
-| `enforce-lowercase` | `true` | Require the entire PR title to be lowercase, including type, scope, and subject. |
-| `verbs` | `""` | Optional comma-separated list of allowed imperative verbs. Overrides the default verb list. |
-| `add-verbs` | `""` | Optional comma-separated list of imperative verbs to add to the default list. |
+| Input                  | Default    | Description                                                                                                                          |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `issue-prefix`         | `""`       | Optional single prefix or comma-separated list of prefixes. Valid suffixes use `${prefix}<positive-integer>`, for example `foo-123`. |
+| `issue-mode`           | `optional` | Issue suffix policy: `optional` or `required`.                                                                                       |
+| `issue-unknown`        | `false`    | Allow unknown issue-like suffixes such as `bar-123` or `#123`.                                                                       |
+| `issue-near-miss`      | `false`    | Allow near-miss suffixes such as `foo123` when `issue-prefix` is `foo-`.                                                             |
+| `trailing-punctuation` | `false`    | Allow the subject to end with `.`, `!`, `?`, `,`, `;`, or `:`.                                                                       |
+| `enforce-lowercase`    | `true`     | Require the entire PR title to be lowercase, including type, scope, and subject.                                                     |
+| `verbs`                | `""`       | Optional comma-separated list of allowed imperative verbs. Overrides the default verb list.                                          |
+| `add-verbs`            | `""`       | Optional comma-separated list of imperative verbs to add to the default list.                                                        |
 
 ## Validation Notes
 
