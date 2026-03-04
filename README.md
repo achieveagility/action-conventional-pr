@@ -10,6 +10,8 @@ This action wraps [`amannn/action-semantic-pull-request`](https://github.com/ama
 
 ## Usage
 
+### Basic
+
 ```yaml
 name: PR Lint
 
@@ -27,6 +29,33 @@ jobs:
       - uses: achieveagility/action-conventional-pr@v1
         with:
           issue-prefix: "foo-"
+```
+
+### Full
+
+```yaml
+name: PR Lint
+
+permissions:
+  pull-requests: read
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: achieveagility/action-conventional-pr@v1
+        with:
+          issue-prefix: "foo-, eng-"
+          issue-mode: "optional"
+          issue-unknown: "false"
+          issue-near-miss: "false"
+          trailing-punctuation: "false"
+          enforce-lowercase: "true"
+          add-verbs: "ship, polish"
 ```
 
 ## Examples
