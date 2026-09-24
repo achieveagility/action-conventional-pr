@@ -2,11 +2,12 @@ import { escapeRegExp, getAllowedVerbs } from "./parsing";
 import type { PullRequestTitleInput, PullRequestTitleValidatorOptions } from "./types";
 
 export function createPullRequestTitleValidator(options: PullRequestTitleValidatorOptions = {}) {
-  const issuePrefixes = Array.isArray(options.issuePrefix)
-    ? options.issuePrefix.map((prefix) => prefix.trim()).filter((prefix) => prefix.length > 0)
-    : options.issuePrefix
+  const issuePrefixes =
+    typeof options.issuePrefix === "string"
       ? [options.issuePrefix.trim()].filter((prefix) => prefix.length > 0)
-      : [];
+      : (options.issuePrefix
+          ?.map((prefix) => prefix.trim())
+          .filter((prefix) => prefix.length > 0) ?? []);
   const issueMode = options.issueMode ?? "optional";
   const issueUnknown = options.issueUnknown ?? false;
   const issueNearMiss = options.issueNearMiss ?? false;

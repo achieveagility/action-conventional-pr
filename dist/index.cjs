@@ -4,27 +4,41 @@ Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
 const defaultImperativeVerbs = [
 	"add",
 	"adjust",
+	"attribute",
+	"block",
 	"bump",
 	"change",
 	"clean",
 	"create",
+	"decrease",
 	"disable",
 	"document",
 	"drop",
 	"enable",
+	"exclude",
+	"export",
+	"expose",
 	"fix",
+	"force",
 	"implement",
 	"improve",
+	"include",
+	"increase",
 	"introduce",
 	"migrate",
+	"move",
+	"pass",
 	"refactor",
 	"remove",
 	"rename",
 	"replace",
+	"resolve",
 	"revert",
 	"simplify",
+	"support",
 	"update",
-	"upgrade"
+	"upgrade",
+	"use"
 ];
 
 //#endregion
@@ -69,7 +83,7 @@ function parseIssueModeInput(value) {
 //#endregion
 //#region src/validator.ts
 function createPullRequestTitleValidator(options = {}) {
-	const issuePrefixes = Array.isArray(options.issuePrefix) ? options.issuePrefix.map((prefix) => prefix.trim()).filter((prefix) => prefix.length > 0) : options.issuePrefix ? [options.issuePrefix.trim()].filter((prefix) => prefix.length > 0) : [];
+	const issuePrefixes = typeof options.issuePrefix === "string" ? [options.issuePrefix.trim()].filter((prefix) => prefix.length > 0) : options.issuePrefix?.map((prefix) => prefix.trim()).filter((prefix) => prefix.length > 0) ?? [];
 	const issueMode = options.issueMode ?? "optional";
 	const issueUnknown = options.issueUnknown ?? false;
 	const issueNearMiss = options.issueNearMiss ?? false;
