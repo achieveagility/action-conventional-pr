@@ -83,3 +83,25 @@ jobs:
 - Repeated spaces are not allowed anywhere in the title.
 - If `issue-prefix` is set to multiple values, any matching prefix is accepted, for example `foo-, eng-`.
 - `verbs` and `add-verbs` cannot both be set at the same time.
+
+## Contributors
+
+When changing the action, update the source and tests, then rebuild the committed action bundle:
+
+```bash
+pnpm install
+pnpm run format:check
+pnpm run lint
+pnpm run types:check
+pnpm run test
+pnpm run build
+```
+
+Commit changes to `dist/index.cjs` with the source changes. After the pull request is merged and CI passes, update the `v1` tag to the latest `main` commit so workflows using `@v1` receive the release:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git tag -fa v1 -m "Update v1 to latest main"
+git push --force origin v1
+```
