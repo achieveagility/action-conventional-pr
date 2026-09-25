@@ -25,6 +25,7 @@ const defaultImperativeVerbs = [
 	"include",
 	"increase",
 	"introduce",
+	"make",
 	"migrate",
 	"move",
 	"pass",

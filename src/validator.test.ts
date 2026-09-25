@@ -23,6 +23,7 @@ describe("createPullRequestTitleValidator", () => {
     "expose",
     "support",
     "pass",
+    "make",
   ])("accepts '%s' as a default verb", (verb) => {
     const validate = createPullRequestTitleValidator();
 
@@ -101,7 +102,7 @@ describe("createPullRequestTitleValidator", () => {
     const validate = createPullRequestTitleValidator();
 
     expect(() => validate({ title: "feat: ship logging" })).toThrow(
-      "PR subject must start with an allowed imperative verb, for example: 'add', 'adjust', 'attribute', 'block', 'bump', 'change', 'clean', 'create', 'decrease', 'disable', 'document', 'drop', 'enable', 'exclude', 'export', 'expose', 'fix', 'force', 'implement', 'improve', 'include', 'increase', 'introduce', 'migrate', 'move', 'pass', 'refactor', 'remove', 'rename', 'replace', 'resolve', 'revert', 'simplify', 'support', 'update', 'upgrade', 'use'.",
+      "PR subject must start with an allowed imperative verb, for example: 'add', 'adjust', 'attribute', 'block', 'bump', 'change', 'clean', 'create', 'decrease', 'disable', 'document', 'drop', 'enable', 'exclude', 'export', 'expose', 'fix', 'force', 'implement', 'improve', 'include', 'increase', 'introduce', 'make', 'migrate', 'move', 'pass', 'refactor', 'remove', 'rename', 'replace', 'resolve', 'revert', 'simplify', 'support', 'update', 'upgrade', 'use'.",
     );
   });
 
